@@ -6,6 +6,8 @@ import pandas as pd
 from datetime import datetime
 import requests, re, json
 
+import qb_parsers as qbp 
+
 def transform(
     df: pd.DataFrame, 
     col_types: dict, 
@@ -63,15 +65,15 @@ def transform(
             continue
         
         t = df[col].copy()
+
+        f = None
         
         print(f'processing col:{col} as type:{col_types[col]}')
             
         # trivial impementations
         if col_types[col] in ['numeric', 'checkbox', 'text', 'email']:
-            def f(x):
-                if pd.isna(x):
-                    return None
-                return {'value':x}
+            f = qbp.default
+                
                 
         elif col_types[col] == 'duration':
         
@@ -85,10 +87,7 @@ def transform(
                 return None
                
             # parse duration col
-            def f(x):
-                if pd.isna(x):
-                    return None
-                return {'value':parse_dur(x)}
+            f = qbp.default
             
         elif col_types[col] == 'date':
             def f(x):
