@@ -3,22 +3,25 @@
 """
 
 import pandas as pd
-from datetime import datetime
 import requests, re, json
+from functools import partial
 
-import qb_parsers as qbp 
+import parsers 
 
 def transform(
     df: pd.DataFrame, 
-    col_types: dict, 
-    date_format: str = '%Y-%m-%d', 
-    datetime_format: str = '%d%b%Y:%H:%M:%S.%f',
-    duration_units: str = "seconds"
+    col_types: dict 
+    #date_format: str = '%Y-%m-%d', 
+    #datetime_format: str = '%d%b%Y:%H:%M:%S.%f',
+    #duration_units: str = "seconds"
     ) -> pd.DataFrame:
     """ Transforms the values in df into values that the QuickBase API can use
     
     After using this function, call `def payload(df, fids)` on the output to get
     your payload.
+
+    For help creating datetime format strings, vist 
+    https://www.programiz.com/python-programming/datetime/strptime.
     
     Parameters
     ----------
@@ -37,14 +40,6 @@ def transform(
         "datetime" : takes a column of datatime objects or strings. You can 
             configure the parsing of strings using datetime_format.
         Example: `col_types = {"column one": "drop", "column two": "checkbox"}`
-    date_format : str
-        The format string to parse string-encoded dates in df. For help creating
-        these strings visit 
-        https://www.programiz.com/python-programming/datetime/strptime.
-    datetime_format : str
-        The format string to parse string-encoded datetimes in df
-    duration_units : string 
-        Specifies how durations should be interpereted. Accepted "seconds", "milliseconds"
 
     Returns
     -------
@@ -56,66 +51,54 @@ def transform(
     
     for col in df.columns:
 
+        # Column not specified in col_types
         if not col in col_types:
-            print(f'col:{col} is missing in col_types')
-            return None
+            raise Exception(f'column \'{col}\' is missing in col_types')
+
+        # Get the type of column and unpack any column args
+        column_type = col_types[col]
+        args = []
+        if isinstance(column_type, tuple):
+            column_type, *args = col_types[col]
 
         if col_types[col] == 'drop':
-            print(f'col:{col} is dropped')
+            print(f'column \'{col}\' is dropped')
             continue
         
+        # temp copy of column to modify
         t = df[col].copy()
 
+        # parsing function
         f = None
         
-        print(f'processing col:{col} as type:{col_types[col]}')
+        print(f'processing column \'{col}\' as \'{column_type}\'')
             
-        # trivial impementations
-        if col_types[col] in ['numeric', 'checkbox', 'text', 'email']:
-            f = qbp.default
+        if column_type in ['numeric', 'checkbox', 'text', 'email']:
+            f = parsers.default
                 
-                
-        elif col_types[col] == 'duration':
-        
-            # convert units
-            if duration_units == 'seconds':
-                parse_dur = lambda x: x*1000
-            elif duration_units == 'milliseconds':
-                parse_dur = lambda x: x
-            else:
-                print(f'{duration_units} is an invalid duration unit')
-                return None
-               
-            # parse duration col
-            f = qbp.default
+        elif column_type == 'duration':
+            if not args:
+                raise Exception("specify a duration unit for column '{col}'")
+            f = partial(
+                parsers.duration, col=col, units=args[0]
+            )
             
-        elif col_types[col] == 'date':
-            def f(x):
-                if pd.isna(x):
-                    return None
-                elif not isinstance(x, (datetime, str)):
-                    print(f"""removed col:{col} val:{x} type:{type(x)}\
-                        expected type in: datetime, str""")
-                    return None
-                elif isinstance(x, str):
-                    x = datetime.strptime(x, date_format)
-                return {'value':x.strftime('%Y-%m-%d')}
+        elif column_type == 'date':
+            if not args:
+                raise Exception("specify a date format for column '{col}'")
+            f = partial(
+                parsers.date, col=col, format=args[0]
+            )
 
-        elif col_types[col] == 'datetime':
-            def f(x):
-                if pd.isna(x):
-                    return None
-                elif not isinstance(x, (datetime, str)):
-                    print(f"""removed col:{col} val:{x} type:{type(x)}\
-                        expected type in: datetime, str""")
-                    return None
-                elif isinstance(x, str):
-                    x = datetime.strptime(x, datetime_format)
-                return {'value':x.strftime('%Y-%m-%dT%H:%M:%SZ')}
+        elif column_type == 'datetime':
+            if not args:
+                raise Exception("specify a datetime format for column '{col}'")
+            f = partial(
+                parsers.datetime, col=col, format=args[0]
+            )
             
         else: 
-            print(f'col:{col} has an invalid type in col_types')
-            return None
+            raise Exception(f'column \'{col}\' has an invalid type')
         
         t = t.apply(f)
         out[col] = t
