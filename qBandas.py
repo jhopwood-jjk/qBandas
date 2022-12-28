@@ -11,9 +11,6 @@ import parsers
 def transform(
     df: pd.DataFrame, 
     col_types: dict 
-    #date_format: str = '%Y-%m-%d', 
-    #datetime_format: str = '%d%b%Y:%H:%M:%S.%f',
-    #duration_units: str = "seconds"
     ) -> pd.DataFrame:
     """ Transforms the values in df into values that the QuickBase API can use
     

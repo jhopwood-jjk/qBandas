@@ -49,7 +49,7 @@ def duration(x: float|int, col: str, units: str = 'milliseconds') -> dict:
 
     return {'value':x}
     
-def date(x: datetime|str, col: str, format: str) -> dict:
+def date(x: datetime|str, col: str, format: str = '%Y-%m-%d') -> dict:
     """ Pack a date into the date format for the QuickBase API
     
     Parameters
@@ -77,7 +77,7 @@ def date(x: datetime|str, col: str, format: str) -> dict:
 
     return {'value':x.strftime('%Y-%m-%d')}
 
-def datetime(x: datetime|str, col: str, format: str) -> dict:
+def datetime(x: datetime|str, col: str, format: str = '%d%b%Y:%H:%M:%S.%f') -> dict:
     """ Pack a datetime into the datetime format for the QuickBase API
     
     Parameters
