@@ -68,34 +68,37 @@ def transform(
         # parsing function
         f = None
         
-        print(f'processing column \'{col}\' as \'{column_type}\'')
+        print(f"processing column '{col}' as '{column_type}'")
             
         if column_type in ['numeric', 'checkbox', 'text', 'email']:
             f = parsers.default
                 
         elif column_type == 'duration':
             if not args:
-                raise Exception("specify a duration unit for column '{col}'")
+                raise Exception(f"specify a duration unit for "\
+                    f"column '{col}'")
             f = partial(
                 parsers.duration, col=col, units=args[0]
             )
             
         elif column_type == 'date':
             if not args:
-                raise Exception("specify a date format for column '{col}'")
+                raise Exception(f"specify a date format for "\
+                    f"column '{col}'")
             f = partial(
                 parsers.date, col=col, format=args[0]
             )
 
         elif column_type == 'datetime':
             if not args:
-                raise Exception("specify a datetime format for column '{col}'")
+                raise Exception(f"specify a datetime format for "\
+                    f"column '{col}'")
             f = partial(
-                parsers.datetime, col=col, format=args[0]
+                parsers.datetimes, col=col, format=args[0]
             )
             
         else: 
-            raise Exception(f'column \'{col}\' has an invalid type')
+            raise Exception(f"column '{col}' has an invalid type")
         
         t = t.apply(f)
         out[col] = t
@@ -128,8 +131,7 @@ def payloads(df: pd.DataFrame, fids: dict, size: int = 20_000) -> list:
      # validate the fids
     for col in df.columns:
         if not col in fids.keys():
-            print(f'col {col} not defined in fids')
-            return None
+            raise Exception(f"column '{col}' not defined in fids")
         
     t = df.copy().rename(columns=fids)
 
@@ -229,16 +231,3 @@ def pretty_print(r: requests.Response) -> str:
         n = match.count(',') 
         text = text.replace(match, f"[...{n+1} items...]")
     return text
-
-
-# Tests         
-if __name__ == '__main__':
-    
-    df = pd.DataFrame({
-        'col1': [0, 1], 
-        'col2': ['1OCT2022:0:45:13.000', '20NOV2022:17:45:13.000']
-    })
-    print(df)
-    print(payloads(transform(df, {'col1':'numeric','col2':'datetime'}),{'col1':'6','col2':'7'}))
-
-

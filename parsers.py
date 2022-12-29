@@ -44,10 +44,10 @@ def duration(x: float|int, col: str, units: str = 'milliseconds') -> dict:
     elif units == 'milliseconds':
         pass
     else:
-        raise Exception(f'{units} is an invalid duration unit for column '\
-            f'\'{col}\'')
+        raise Exception(f"'{units}' is an invalid duration unit for "\
+            f"column '{col}'")
 
-    return {'value':x}
+    return {'value':int(x)}
     
 def date(x: datetime|str, col: str, format: str = '%Y-%m-%d') -> dict:
     """ Pack a date into the date format for the QuickBase API
@@ -60,7 +60,7 @@ def date(x: datetime|str, col: str, format: str = '%Y-%m-%d') -> dict:
         The name of the column in the case of an exception
     format
         For help creating datetime format strings, vist 
-        https://www.programiz.com/python-programming/datetime/strptime.
+        https://docs.python.org/2/library/datetime.html#strftime-and-strptime-behavior.
 
     Returns
     -------
@@ -70,14 +70,14 @@ def date(x: datetime|str, col: str, format: str = '%Y-%m-%d') -> dict:
         return None
 
     if not isinstance(x, (datetime, str)):
-        raise Exception(f'column \'{col}\' got invalid data type '\ 
-            f'\'{type(x)}\' expected type datetime or str')
+        raise Exception(f"column '{col}' got invalid data type "\
+            f"'{type(x)}', expected type datetime or str")
     elif isinstance(x, str):
         x = datetime.strptime(x, format)
 
     return {'value':x.strftime('%Y-%m-%d')}
 
-def datetime(x: datetime|str, col: str, format: str = '%d%b%Y:%H:%M:%S.%f') -> dict:
+def datetimes(x: datetime|str, col: str, format: str = '%d%b%Y:%H:%M:%S.%f') -> dict:
     """ Pack a datetime into the datetime format for the QuickBase API
     
     Parameters
@@ -98,8 +98,8 @@ def datetime(x: datetime|str, col: str, format: str = '%d%b%Y:%H:%M:%S.%f') -> d
         return None
 
     if not isinstance(x, (datetime, str)):
-        raise Exception(f'column \'{col}\' got invalid data type '\ 
-            f'\'{type(x)}\' expected type datetime or str')
+        raise Exception(f"column '{col}' got invalid data type "\
+            f"'{type(x)}', expected type datetime or str")
     elif isinstance(x, str):
         x = datetime.strptime(x, format)
     
