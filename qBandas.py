@@ -252,5 +252,5 @@ def fast_col_types(x: str = "COL1 COL2 COL3", delim:str=None):
         t = x.split()
     print("col_types = {")
     for item in t:
-        print(f'\t"{item.strip()}": None')
+        print(f'\t"{item.strip()}": None,')
     print('}')
