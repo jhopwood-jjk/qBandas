@@ -247,10 +247,10 @@ def fast_col_types(x: str = "COL1 COL2 COL3", delim:str=None):
     Python code as a string
     """
     if delim:
-        t = x.split(separator=delim)
+        t = x.split(delim)
     else:
         t = x.split()
     print("col_types = {")
     for item in t:
-        print(f'\t"{item}": None')
+        print(f'\t"{item.strip()}": None')
     print('}')
