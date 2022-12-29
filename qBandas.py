@@ -96,6 +96,11 @@ def transform(
             f = partial(
                 parsers.datetimes, col=col, format=args[0]
             )
+        
+        elif column_type == 'phone':
+            f = partial(
+                parsers.phonenum, col=col
+            )
             
         else: 
             raise Exception(f"column '{col}' has an invalid type")

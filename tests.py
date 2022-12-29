@@ -16,6 +16,8 @@ if __name__ == '__main__':
         'world', 'josh'],
         'durr': [1, 2, 3, 4, 5, 6, 7, None, 8.3, 9.7],
         'dt' : [ '1 January 2022 10:16 PM', None, None, None, None, None, 
+        None, None, None, None ],
+        'phony':[ '9206875640x5567', '5556875670', None, None, None, None, 
         None, None, None, None ]
     }
 
@@ -29,7 +31,8 @@ if __name__ == '__main__':
         'dates' : ('date', '%m.%d.%Y'),
         'drop_me' : 'drop',
         'durr' : ('duration', 'seconds'),
-        'dt' : ('datetime', '%d %B %Y %H:%M %p')
+        'dt' : ('datetime', '%d %B %Y %H:%M %p'),
+        'phony': 'phone'
     }
 
     transformed = qb.transform(df, col_types=col_types)
@@ -45,7 +48,8 @@ if __name__ == '__main__':
         'names' : '7',
         'dates' : '8',
         'durr' : '9',
-        'dt' : '10'
+        'dt' : '10',
+        'phony': '11'
     }
 
     out = qb.payloads(transformed, fids)

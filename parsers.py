@@ -1,5 +1,7 @@
 import pandas as pd
 from datetime import datetime
+import phonenumbers
+
 
 def default(x: object) -> dict:
     """ Pack a value into the default QuickBase API format
@@ -104,3 +106,32 @@ def datetimes(x: datetime|str, col: str, format: str = '%d%b%Y:%H:%M:%S.%f') -> 
         x = datetime.strptime(x, format)
     
     return {'value':x.strftime('%Y-%m-%dT%H:%M:%SZ')}
+
+
+def phonenum(x: None|str, col: str, format: str= None) -> dict:
+    """ Pack a phone string into the phone format for the QuickBase API
+    
+    Parameters
+    ----------
+    x
+        The value to pack. It should be a string
+    col
+        The name of the column in the case of an exception
+
+    Returns
+    -------
+    the packed value
+    """
+    
+    if pd.isna(x):
+        return None
+    
+    if not isinstance(x, str):
+        raise Exception(f"column '{col}' got invalid data type "\
+            f"'{type(x)}', expected type str")
+
+    x = phonenumbers.parse(x, 'US')
+    x = phonenumbers.format_number(x,phonenumbers.PhoneNumberFormat.NATIONAL)
+    x = x.replace('ext. ', 'x')
+    #return "(123) 456-7890 x123"
+    return {'value':x}
