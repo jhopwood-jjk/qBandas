@@ -231,3 +231,26 @@ def pretty_print(r: requests.Response) -> str:
         n = match.count(',') 
         text = text.replace(match, f"[...{n+1} items...]")
     return text
+
+def fast_col_types(x: str = "COL1 COL2 COL3", delim:str=None):
+    """ Print out the python code for making the col_types dict
+
+    Parameters
+    ----------
+    x
+        The string contatining all column names seperated by a delimeter
+    delim
+        the deliminating string. None means split on whitespace
+
+    Returns
+    -------
+    Python code as a string
+    """
+    if delim:
+        t = x.split(separator=delim)
+    else:
+        t = x.split()
+    print("col_types = {")
+    for item in t:
+        print(f'\t"{item}": None')
+    print('}')
