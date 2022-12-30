@@ -98,8 +98,11 @@ def transform(
             )
         
         elif column_type == 'phone':
+            if not args:
+                raise Exception(f"specify a phone number format for "\
+                    f"column '{col}'")
             f = partial(
-                parsers.phonenum, col=col
+                parsers.phonenum, col=col, format=args[0]
             )
             
         else: 

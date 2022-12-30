@@ -1,4 +1,4 @@
-import qBandas as qb
+import qbandas as qb
 import pandas as pd
 import json
 
@@ -17,8 +17,8 @@ if __name__ == '__main__':
         'durr': [1, 2, 3, 4, 5, 6, 7, None, 8.3, 9.7],
         'dt' : [ '1 January 2022 10:16 PM', None, None, None, None, None, 
         None, None, None, None ],
-        'phony':[ '9206875640x5567', '5556875670', '555.687.5880', '(555) 687-5880', None, None, 
-        None, None, None, None ]
+        'phony':[ '555 687 5880x9237', '555.687.5880x9237', '555.687.5880', 
+        None, None, None, None, None, None, None ]
     }
 
     df = pd.DataFrame(data)
@@ -32,7 +32,7 @@ if __name__ == '__main__':
         'drop_me' : 'drop',
         'durr' : ('duration', 'seconds'),
         'dt' : ('datetime', '%d %B %Y %H:%M %p'),
-        'phony': 'phone'
+        'phony': ('phone', '###.###.####x####')
     }
 
     transformed = qb.transform(df, col_types=col_types)

@@ -1,6 +1,6 @@
 import pandas as pd
 from datetime import datetime
-import phonenumbers
+# import phonenumbers
 
 
 def default(x: object) -> dict:
@@ -108,7 +108,7 @@ def datetimes(x: datetime|str, col: str, format: str = '%d%b%Y:%H:%M:%S.%f') -> 
     return {'value':x.strftime('%Y-%m-%dT%H:%M:%SZ')}
 
 
-def phonenum(x: None|str, col: str, format: str= None) -> dict:
+def phonenum(x: None|str, col: str, format: str= "##########") -> dict:
     """ Pack a phone string into the phone format for the QuickBase API
     
     Parameters
@@ -117,6 +117,10 @@ def phonenum(x: None|str, col: str, format: str= None) -> dict:
         The value to pack. It should be a string
     col
         The name of the column in the case of an exception
+    format
+        the format string for reading the phone number. The phone number 
+        "(123) 456-7890 x123" would have the format string "(###) ###-#### x###"
+        THe extension must come last. It is optional for x to include it.
 
     Returns
     -------
@@ -130,8 +134,18 @@ def phonenum(x: None|str, col: str, format: str= None) -> dict:
         raise Exception(f"column '{col}' got invalid data type "\
             f"'{type(x)}', expected type str")
 
-    x = phonenumbers.parse(x, 'US')
-    x = phonenumbers.format_number(x,phonenumbers.PhoneNumberFormat.NATIONAL)
-    x = x.replace('ext. ', 'x')
+    # a str containing only the digits in order
+
+    y = [x[i] for i in range(len(x)) if format[i] == '#']
+    y = ''.join(y)
+
+    if not y.isnumeric() or len(y) < 10:
+        raise Exception(f"column '{col}' got invalid data. "\
+            f"could not parse '{x}' with format '{format}'") 
+
+    t = f'({y[0:3]}) {y[3:6]}-{y[6:10]}'
+    if len(y) > 10:
+        t = t + f' x{y[10:]}'
+
     #return "(123) 456-7890 x123"
-    return {'value':x}
+    return {'value':t}
