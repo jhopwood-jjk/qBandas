@@ -135,9 +135,12 @@ def phonenum(x: None|str, col: str, format: str= "##########") -> dict:
             f"'{type(x)}', expected type str")
 
     # a str containing only the digits in order
-
-    y = [x[i] for i in range(len(x)) if format[i] == '#']
-    y = ''.join(y)
+    try:
+        y = [x[i] for i in range(len(x)) if format[i] == '#']
+        y = ''.join(y)
+    except IndexError:
+        raise Exception(f"column '{col}' got invalid data. "\
+            f"could not parse '{x}' with format '{format}'") 
 
     if not y.isnumeric() or len(y) < 10:
         raise Exception(f"column '{col}' got invalid data. "\
