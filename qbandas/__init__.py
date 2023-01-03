@@ -263,3 +263,48 @@ def fast_col_types(x: str = "COL1 COL2 COL3", delim:str=None):
     for item in t:
         print(f'\t"{item.strip()}": None,')
     print('}')
+
+def full_transform(df: pd.DataFrame, schema: dict[tuple[int, str]],
+    size: int = 20_000) -> list[list[dict]]:
+    """
+    Turn a dataframe into payloads for the quickbase API
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The data to transform
+    schema : dict
+        Specifies the field in the destination table on quickbase
+        and the data type (with additional formatting requirements)
+        Example:
+        `schema = { "my_col" = (7, "phone", "###-###-####") }`
+        The column called "my_col" will be parsed a phone number in the format
+        "###-###-####", it will be sent to FID 7 in the destination table.
+    size : int
+        The size of the payloads to send
+
+    Returns
+    -------
+    list[list[dict]] : The outermost list species which payload. Each element of
+    the outer list is a stand-alone payload to be sent. 
+    """
+    fids = dict()
+    col_types = dict()
+
+    # unpack the schema
+    for key in schema.keys():
+        if schema[key] == 'drop':
+            col_types[key] = schema[key]
+        else:
+            t, *col_types[key] = schema[key]
+            fids[key] = str(t)
+
+    print(fids)
+    print(col_types)
+
+    return None
+
+    inter = transform(df, col_types=col_types)
+    out = payloads(inter, fids=fids, size=size)
+
+    return out

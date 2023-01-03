@@ -47,3 +47,15 @@ if __name__ == '__main__':
     out = qb.payloads(transformed, fids)
     print(json.dumps(out, indent=2))
 
+    # test the full transform
+    schema = {
+        'nums' : (6, 'numeric'),
+        'names' : (7, 'text'),
+        'dates' : (8, 'date', '%m.%d.%Y'),
+        'drop_me' : 'drop',
+        'durr' : (9, 'duration', 'seconds'),
+        'dt' : (10, 'datetime', '%d %B %Y %H:%M %p'),
+        'phony': (11, 'phone', '###.###.####x####')
+    }
+    qb.full_transform(df, schema=schema)
+
