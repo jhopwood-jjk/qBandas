@@ -293,16 +293,32 @@ def full_transform(df: pd.DataFrame, schema: dict[tuple[int, str]],
 
     # unpack the schema
     for key in schema.keys():
+
+        # dropped columns don't have fid or args
         if schema[key] == 'drop':
             col_types[key] = schema[key]
+        
+        # non-dropped cols
         else:
+            #these must ALL be tuples of args
+            if not isinstance(schema[key], tuple):
+                raise Exception(f"column '{key}' has invalid schema "\
+                    f"'{schema[key]}', expected a tuple")
+
             t, *col_types[key] = schema[key]
+
+            # validate fids
+            if not isinstance(t, int):
+                raise Exception(f"column '{key}' has invalid fid '{t}'")
             fids[key] = str(t)
 
-    print(fids)
-    print(col_types)
-
-    return None
+            # validate column parsing args
+            if not len(col_types[key]):
+                raise Exception(f"column '{key}' has no data type.")
+            if len(col_types[key]) == 1:
+                col_types[key] = col_types[key][0] # no formatting
+            else:
+                col_types[key] = tuple(col_types[key])
 
     inter = transform(df, col_types=col_types)
     out = payloads(inter, fids=fids, size=size)
