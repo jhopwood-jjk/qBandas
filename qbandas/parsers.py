@@ -3,7 +3,7 @@ from datetime import datetime
 # import phonenumbers
 
 
-def default(x: object) -> dict:
+def parse_default(x: object) -> dict:
     """ Pack a value into the default QuickBase API format
 
     This function is designed to be applied to column from a pd.DataFrame.
@@ -22,7 +22,7 @@ def default(x: object) -> dict:
     return {'value':x}
 
 
-def duration(x: float|int, col: str, units: str = 'milliseconds') -> dict:
+def parse_duration(x: float|int, col: str, units: str = 'milliseconds') -> dict:
     """ Pack a number into a duration format for the QuickBase API
     
     Parameters
@@ -51,7 +51,7 @@ def duration(x: float|int, col: str, units: str = 'milliseconds') -> dict:
 
     return {'value':int(x)}
     
-def date(x: datetime|str, col: str, format: str = '%Y-%m-%d') -> dict:
+def parse_date(x: datetime|str, col: str, format: str = '%Y-%m-%d') -> dict:
     """ Pack a date into the date format for the QuickBase API
     
     Parameters
@@ -79,7 +79,7 @@ def date(x: datetime|str, col: str, format: str = '%Y-%m-%d') -> dict:
 
     return {'value':x.strftime('%Y-%m-%d')}
 
-def datetimes(x: datetime|str, col: str, format: str = '%d%b%Y:%H:%M:%S.%f') -> dict:
+def parse_datetime(x: datetime|str, col: str, format: str = '%d%b%Y:%H:%M:%S.%f') -> dict:
     """ Pack a datetime into the datetime format for the QuickBase API
     
     Parameters
@@ -108,7 +108,7 @@ def datetimes(x: datetime|str, col: str, format: str = '%d%b%Y:%H:%M:%S.%f') -> 
     return {'value':x.strftime('%Y-%m-%dT%H:%M:%SZ')}
 
 
-def phonenum(x: None|str, col: str, format: str= "##########") -> dict:
+def parse_phonenum(x: None|str, col: str, format: str= "##########") -> dict:
     """ Pack a phone string into the phone format for the QuickBase API
     
     Parameters

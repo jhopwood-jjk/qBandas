@@ -6,7 +6,8 @@ import pandas as pd
 import requests, re, json
 from functools import partial
 
-import parsers 
+from .parsers import parse_default, parse_duration, parse_date
+from .parsers import parse_datetime, parse_phonenum
 
 def transform(
     df: pd.DataFrame, 
@@ -71,14 +72,14 @@ def transform(
         print(f"processing column '{col}' as '{column_type}'")
             
         if column_type in ['numeric', 'checkbox', 'text', 'email']:
-            f = parsers.default
+            f = parse_default
                 
         elif column_type == 'duration':
             if not args:
                 raise Exception(f"specify a duration unit for "\
                     f"column '{col}'")
             f = partial(
-                parsers.duration, col=col, units=args[0]
+                parse_duration, col=col, units=args[0]
             )
             
         elif column_type == 'date':
@@ -86,7 +87,7 @@ def transform(
                 raise Exception(f"specify a date format for "\
                     f"column '{col}'")
             f = partial(
-                parsers.date, col=col, format=args[0]
+                parse_date, col=col, format=args[0]
             )
 
         elif column_type == 'datetime':
@@ -94,7 +95,7 @@ def transform(
                 raise Exception(f"specify a datetime format for "\
                     f"column '{col}'")
             f = partial(
-                parsers.datetimes, col=col, format=args[0]
+                parse_datetime, col=col, format=args[0]
             )
         
         elif column_type == 'phone':
@@ -102,7 +103,7 @@ def transform(
                 raise Exception(f"specify a phone number format for "\
                     f"column '{col}'")
             f = partial(
-                parsers.phonenum, col=col, format=args[0]
+                parse_phonenum, col=col, format=args[0]
             )
             
         else: 

@@ -3,8 +3,8 @@ import pandas as pd
 import json
 
 if __name__ == '__main__':
-    print('testing')
-
+    
+    # create a df for testing 
     data = {
         'nums' : [1, 2, 3, 4, 5, None, 7, 8, 9, 10],
         'names' : ["one", "two", "three", None, "five", "six", "seven", "eight", 
@@ -20,11 +20,9 @@ if __name__ == '__main__':
         'phony':[ '555 687 5880x9237', '555.687.5880x9237', '555.687.5880', 
         None, None, None, None, None, None, None ]
     }
-
     df = pd.DataFrame(data)
     
-    print('transforming')
-
+    # test transforming the data
     col_types = {
         'nums' : 'numeric',
         'names' : 'text',
@@ -34,15 +32,10 @@ if __name__ == '__main__':
         'dt' : ('datetime', '%d %B %Y %H:%M %p'),
         'phony': ('phone', '###.###.####x####')
     }
-
     transformed = qb.transform(df, col_types=col_types)
-
-    print('transformed')
-    
     print(transformed)
 
-    print('loading')
-
+    # test loading the data
     fids = {
         'nums' : '6',
         'names' : '7',
@@ -51,8 +44,6 @@ if __name__ == '__main__':
         'dt' : '10',
         'phony': '11'
     }
-
     out = qb.payloads(transformed, fids)
-
     print(json.dumps(out, indent=2))
 
