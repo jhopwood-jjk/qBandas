@@ -237,7 +237,7 @@ def pretty_print(r: requests.Response) -> str:
     """
 
     text = json.dumps(r.json(),indent=4)
-    pattern = r"\[[\d,\s]*\]"
+    pattern = r"\[[\d,\s]+\]"
     matches = re.findall(pattern, text)
     for match in matches:
         n = match.count(',') 
