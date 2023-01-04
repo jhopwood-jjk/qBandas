@@ -9,6 +9,9 @@ from functools import partial
 from .parsers import parse_default, parse_duration, parse_date
 from .parsers import parse_datetime, parse_phonenum
 
+print("Using qBandas version 0.0.1")
+print("Read the docs https://github.com/jhopwood-jjk/qBandas")
+
 def transform(
     df: pd.DataFrame, 
     col_types: dict 
@@ -241,8 +244,8 @@ def pretty_print(r: requests.Response) -> str:
         text = text.replace(match, f"[...{n+1} items...]")
     return text
 
-def fast_col_types(x: str = "COL1 COL2 COL3", delim:str=None):
-    """ Print out the python code for making the col_types dict
+def fastSchema(x: str = "COL1 COL2 COL3", delim:str=None):
+    """ Print out the python code for making the schema dict
 
     Parameters
     ----------
@@ -261,7 +264,7 @@ def fast_col_types(x: str = "COL1 COL2 COL3", delim:str=None):
         t = x.split()
     print("col_types = {")
     for item in t:
-        print(f'\t"{item.strip()}": None,')
+        print(f'\t"{item.strip()}": (000, None),')
     print('}')
 
 def full_transform(df: pd.DataFrame, schema: dict[tuple[int, str]],
