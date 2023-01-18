@@ -57,6 +57,13 @@ if __name__ == '__main__':
         'dt' : (10, 'datetime', '%d %B %Y %H:%M %p'),
         'phony': (11, 'phone', '###.###.####x####')
     }
+
     out = qb.full_transform(df, schema=schema)
     print(json.dumps(out, indent=2)[:120])
+
+    # test reading a schema from json
+    schema = qb.read_schema('schema.json')
+    out = qb.full_transform(df, schema=schema)
+    print(json.dumps(out, indent=2)[:120])
+
 

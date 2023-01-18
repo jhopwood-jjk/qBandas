@@ -244,8 +244,8 @@ def pretty_print(r: requests.Response) -> str:
         text = text.replace(match, f"[...{n+1} items...]")
     return text
 
-def fastSchema(x: str = "COL1 COL2 COL3", delim:str=None):
-    """ Print out the python code for making the schema dict
+def fastSchema(x: str = "COL1 COL2 COL3", delim:str=None, JSON=False):
+    """ Console print the python code or JSON rep for making the schema dict
 
     Parameters
     ----------
@@ -253,18 +253,18 @@ def fastSchema(x: str = "COL1 COL2 COL3", delim:str=None):
         The string contatining all column names seperated by a delimeter
     delim
         the deliminating string. None means split on whitespace
+    JSON
+        format the printing for JSON
 
-    Returns
-    -------
-    Python code as a string
     """
     if delim:
         t = x.split(delim)
     else:
         t = x.split()
-    print("col_types = {")
+    print("schema = {" if not JSON else "{")
     for item in t:
-        print(f'\t"{item.strip()}": (000, None),')
+        print(f'\t"{item.strip()}": '+('(000, None),'if not JSON else '"000 None"'))
+
     print('}')
 
 def full_transform(df: pd.DataFrame, schema: dict[tuple[int, str]],
@@ -311,7 +311,7 @@ def full_transform(df: pd.DataFrame, schema: dict[tuple[int, str]],
             t, *col_types[key] = schema[key]
 
             # validate fids
-            if not isinstance(t, int):
+            if not (isinstance(t, int) or t.isnumeric()):
                 raise Exception(f"column '{key}' has invalid fid '{t}'")
             fids[key] = str(t)
 
@@ -326,4 +326,34 @@ def full_transform(df: pd.DataFrame, schema: dict[tuple[int, str]],
     inter = transform(df, col_types=col_types)
     out = payloads(inter, fids=fids, size=size)
 
+    return out
+
+def read_schema(path: str) -> dict:
+    """ Read a schema from a JSON file
+
+    Almost all entries should have the form `"col": "<fid> <col_type> <*args>"`. 
+    Dropped columns do not need and fid. Below is an example `schema.json`
+    ```json
+    {
+        "PhoneNum": "7 phone ###.###.####",
+        "BadInfo": "drop",
+        "FirstName": "8 text"
+    }
+    ```
+    
+    Parameters
+    ----------
+    path : str
+        The location of the JSON file
+
+    Returns
+    -------
+    The schema as a python object
+    """
+    import shlex
+    out = json.load(open(path))
+    for key in out:
+        t = shlex.split(out[key])
+        s = t[0] if len(t) == 1 else tuple(t)
+        out[key] = s
     return out
