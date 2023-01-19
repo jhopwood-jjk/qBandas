@@ -9,7 +9,7 @@ from functools import partial
 from .parsers import parse_default, parse_duration, parse_date
 from .parsers import parse_datetime, parse_phonenum
 
-print("Using qBandas version 0.0.1")
+print("Using qBandas version 0.0.2")
 print("Read the docs https://github.com/jhopwood-jjk/qBandas")
 
 def transform(
@@ -223,7 +223,7 @@ def send_records(
 
     return r
     
-def pretty_print(r: requests.Response) -> str:
+def pretty_str(r: requests.Response) -> str:
     """ Takes a resonse object from `send_records()` and makes it pretty
 
     Parameters
