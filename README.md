@@ -85,9 +85,11 @@ The first step in creating a schema is making sure that your data is _parsable_.
 
 There are several ways to define a schema--and even ways to run qBandas without specifying a schema directly--but the method I recommend most people use is creating a `schema.json` file. The syntax for this file is simple. Inside of curly braces, each column name is a key for a string value which takes the format `"<FID> <column type> <args>"`. 
 
-__FID__ specifies which column on QuickBase corresponds to which column in your Dataframe. Make sure the column types on QuickBase match the ones you specify. You can gather your FIDs by folowing this guide.  
+`<FID>` specifies which column on QuickBase corresponds to which column in your Dataframe. Make sure the column types on QuickBase match the ones you specify. You can gather your FIDs by looking at the QuickBase table's schema. 
 
+If your dataset is large, you may find the method `qb.fastSchema()` helpful for this step.
 
+Here is what I got.
 
 <div style="margin:0;"><b>schema.json</b></div>
 
@@ -96,4 +98,18 @@ __FID__ specifies which column on QuickBase corresponds to which column in your 
     "name": "6 text",
     "age": "7 numeric"    
 }
+```
+
+I can read this schema into Python.
+
+```python
+schema = qb.read_schema('schema.json')
+```
+
+### Sending the Data
+
+Now that we have a dataset and a matching schema we can transform the data into a format that the QuickBase API can understand. 
+
+```python
+payloads = qb.full_transform(df, schema)
 ```
