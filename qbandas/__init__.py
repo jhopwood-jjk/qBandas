@@ -357,3 +357,15 @@ def read_schema(path: str) -> dict:
         s = t[0] if len(t) == 1 else tuple(t)
         out[key] = s
     return out
+
+
+if __name__ == '__main__':
+    import argparse
+
+    argParser = argparse.ArgumentParser()
+    argParser.add_argument("-n", "--name", help="your name")
+
+    args = argParser.parse_args()
+    print("args=%s" % args)
+
+    print("args.name=%s" % args.name)
