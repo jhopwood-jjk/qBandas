@@ -3,11 +3,10 @@
 qBandas (QuickBase + Pandas) is a Python package designed to effeciently transfer tabular data between QuickBase applications and the popular Python data handling library Pandas. If you are new to Pandas, you can read more about it [here](https://pandas.pydata.org/).
 
 The advantages of this approach over a QuickBase pipeline are:
-* Unrestricted and _much_ faster data pre and post processing in Python.
 * Access to databases through Python libraries like [pyodbc](https://github.com/mkleehammer/pyodbc) and [SASPy](https://sassoftware.github.io/saspy/).
-* Greater control over features like error logging, automated reporting, and scheduling.
+* Greater control over features like error logging, data processing, automated reporting, and scheduling.
 * Significantly less performance impact on your QuickBase application.
-* Upload tabular data from local sources. 
+* Access tabular data from local sources. 
 
 The disadvantages of this approach compared to a pipeline are:
 * Typically longer time to deploy.
@@ -35,7 +34,7 @@ To show you the ropes, I will do a walkthrough of uploading a DataFrame to Quick
 
 ### 1) Get Your Data
 
-Read your tabular data into Python. The method you use for this is up to you. I will simply hardcode mine. 
+Read your tabular data into Python. The method you use for this is up to you. This step is one of the greatest strenghts of this method compared to a pipeline. I will simply hardcode mine. 
 
 ```python
 import pandas as pd
@@ -77,7 +76,7 @@ token = f"QB-USER-TOKEN {os.environ['QB_USER_TOKEN']}"
 agent = "name-age-upload"
 ```
 
-### Creating a Schema
+### 3) Creating a Schema
 
 The schema defines how qBandas will comunicate the data to QuickBase. For example, if you have a column of integers you could specify that column as `numeric`, `text`, or `duration`. Each of those __column types__ leads to a slightly different handling of the data. Be sure to choose the one you want for your data. See the docs of `qb.transform()` for a comprehensive list of column types and their arguments. 
 
@@ -106,10 +105,25 @@ I can read this schema into Python.
 schema = qb.read_schema('schema.json')
 ```
 
-### Sending the Data
+### 4) Sending the Data
 
-Now that we have a dataset and a matching schema we can transform the data into a format that the QuickBase API can understand. 
+Now that we have a dataset and a matching schema, we can transform the data into a format that the QuickBase API can understand. These last steps are the steps most likely to throw errors. The formatting of the data in these calls is somewhat spesific, so be sure to read any error messages carefully; they will tell you what is wrong.
+
+In this call we create a list of payloads to send. The data is segmented into chunks to keep the requests under 10MB, the API's maximum request size. For data sets with less than 20,000 records, by default you will get get a single payload. If your data is decently wide you may still encounter problems hitting the maximum request size. In this case, adjust the kwarg `size` to keep each request size down. 
 
 ```python
 payloads = qb.full_transform(df, schema)
 ```
+
+The final step is to send your payloads to your QuickBase application. The code for this part offers alot of flexibility, but I will show the simplest option.
+
+```python
+for payload in payloads:
+    r = qb.send_records(payload, dbid, hostname, agent, token)
+    print(qb.pretty_str(r))
+    r.raise_for_status()
+```
+
+We just loop through each payload and send it with the info we gathered earlier. 
+
+That's it! As long as `r.raise_for_status()` doesn't throw an error, your records will be in your QuickBase application. 
