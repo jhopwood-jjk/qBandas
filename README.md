@@ -86,7 +86,9 @@ There are several ways to define a schema--and even ways to run qBandas without 
 
 `<FID>` specifies which column on QuickBase corresponds to which column in your Dataframe. Make sure the column types on QuickBase match the ones you specify. You can gather your FIDs by looking at the QuickBase table's schema. 
 
-If your dataset is large, you may find the method `qb.fastSchema()` helpful for this step.
+If your dataset is large, you may find the method `qb.fastSchema()` helpful for this step. 
+
+EDIT: New in version 0.0.4 is the ability to generate a `.json` schema file through the command line!
 
 Here is what I got.
 
