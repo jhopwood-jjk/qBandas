@@ -1,4 +1,6 @@
-import argparse, os
+import argparse, os, pathlib
+import pandas as pd
+from __init__ import write_schema
 
 argParser = argparse.ArgumentParser(
     prog = 'qbandas',
@@ -11,25 +13,36 @@ argParser.add_argument("-c", "--create-schema",
 )
 
 argParser.add_argument("-d", "--data-file", 
-    type=argparse.FileType('r'), 
-    help="Path to the data file. Defaults to 'data.csv' in current working directory.",
+    type=pathlib.Path, 
+    help="""Path to the data file. Defaults to 'data.csv' in current working directory. Only supports general delimited files (.csv, .tsv, etc.).""",
     metavar="file"
 )
 
 argParser.add_argument('-s', '--schema-file', 
-    type=argparse.FileType('w'), 
+    type=pathlib.Path, 
     help="Path to create schema file. Defaults to 'schema.json' in current working directory.",
+    metavar="file"
+)
+
+argParser.add_argument('--delim',  
+    help="The delimiter of the data file. Defaults to ','.",
+    choices=[',', '\t', ' ', ';'],
+    default=',',
     metavar="file"
 )
 
 args = argParser.parse_args()
 if args.create_schema:
-    print(args)
-    data = args.data_file
-    if not data:
-        data = open(os.path.join(os.getcwd(), 'data.csv'), 'r')
 
-    schema = args.schema_file
-    if not schema:
-        data = open(os.path.join(os.getcwd(), 'schema.json'), 'w')
+    data_path = args.data_file
+    if not data_path:
+        data_path = os.path.join(os.getcwd(), 'data.csv')
+    with open(data_path, 'r') as f:
+        df = pd.read_table(data_path, delimiter=args.delim)
 
+    schema_path = args.schema_file
+    if not schema_path:
+        schema_path = open(os.path.join(os.getcwd(), 'schema.json'), 'a')
+    with open(schema_path, 'a') as f:
+        write_schema(df, f)
+    

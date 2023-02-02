@@ -3,13 +3,13 @@
 """
 
 import pandas as pd
-import requests, re, json
+import requests, re, json, typing
 from functools import partial
 
-from .parsers import parse_default, parse_duration, parse_date
-from .parsers import parse_datetime, parse_phonenum
+from parsers import parse_default, parse_duration, parse_date
+from parsers import parse_datetime, parse_phonenum
 
-print("Using qBandas version 0.0.2")
+print("Using qBandas version 0.0.3")
 print("Read the docs https://github.com/jhopwood-jjk/qBandas")
 
 def transform(
@@ -332,7 +332,7 @@ def read_schema(path: str) -> dict:
     """ Read a schema from a JSON file
 
     Almost all entries should have the form `"col": "<fid> <col_type> <*args>"`. 
-    Dropped columns do not need and fid. Below is an example `schema.json`
+    Dropped columns do not need an fid. Below is an example `schema.json`
     ```json
     {
         "PhoneNum": "7 phone ###.###.####",
@@ -358,4 +358,34 @@ def read_schema(path: str) -> dict:
         out[key] = s
     return out
 
+def write_schema(df: pd.DataFrame, f: typing.IO, space: int=32) -> None:
+    """ Define a generic schema from a dataframe and write it to disk
+
+    Parameters
+    ----------
+    df : pandas.DataFrame
+        The dataframe to create a schema from
+    f : file 
+        The file to write the schema to
+    space : int
+        number of chars after the tab but before the type string
+    """
+
+    mapping = {
+        'int64': 'numeric',
+        'float64': 'numeric',
+        'object': 'text',
+        'str': 'text',
+        'bool': 'checkbox',
+        'datetime': 'datetime'
+    }
+    t = map(str, df.dtypes)
+    types = map(lambda x: mapping[x] if x in mapping else None, t)
     
+    out = '{\n'
+    for col, typ in zip(df.columns, types):
+        b = ' '*(space-len(col)) if len(col) < 16 else ' '
+        out += f'\t"{col}":' + b + f'"000 {typ}",\n'
+    out = out[:-2] + '\n}'
+
+    f.write(out)
