@@ -1,13 +1,11 @@
 """ Integrates the popular data handling library Pandas and the QuickBase API
 
 """
-
-import pandas as pd
 import requests, re, json, typing
+import pandas as pd
 from functools import partial
 
-from parsers import parse_default, parse_duration, parse_date
-from parsers import parse_datetime, parse_phonenum
+from parsers import parse_default, parse_duration, parse_date, parse_datetime, parse_phonenum
 
 print("Using qBandas version 0.0.3")
 print("Read the docs https://github.com/jhopwood-jjk/qBandas")
@@ -117,8 +115,6 @@ def transform(
             
     return out 
 
-
-
 def payloads(df: pd.DataFrame, fids: dict, size: int = 20_000) -> list:
     """ Create a list of payloads to be sent
     
@@ -161,46 +157,42 @@ def payloads(df: pd.DataFrame, fids: dict, size: int = 20_000) -> list:
     return out
 
 
-def send_records(
-    payload: list,
-    table: str,
-    QB_Realm_Hostname: str,
-    Authorization: str,
-    User_Agent: str = 'qBandasUser',
-    fieldsToReturn: list = None
-    ) -> requests.Response:
+def send_records(payload: list, info: dict) -> requests.Response:
     """ Send a list of records to a table in a QuickBase app
-
-    Please see `transform(df, col_types)` and `payload(df, fids)` to set up your
-    payload.
 
     Parameters
     ----------
     payload : list
         The QuickBase API encoded data you would like to send.
-    table : str
-        The destination table identifier on QuickBase. Can be found in the URL
-        when viewing the table. Example: "brqfpn6ur"
-    QB_Realm_Hostname : str
-        Your Quickbase domain, for example "demo.quickbase.com"
-    User_Agent : str
-        This is entered by the person or utility invoking the API. You might 
-        custom create this or use the default one of your toolkit. Being 
-        descriptive here may offer more identification and troubleshooting 
-        capabilities.
-    Authorization : str
-        The Quickbase authentication scheme you are using to authenticate the 
-        request, as described on the [authorization page](https://developer.quickbase.com/auth).
-    fieldsToReturn : list
-        A list of field IDs from the destination table that you would like 
-        returned. Example: `fieldsToReturn = [6,7]`
+    info : dict
+        See docs for qBandas.upload() for spec. 
 
     Returns
     -------
-    requests.Response : the response from the destination. Call `.json()` on the 
-        response to see the text.
+    requests.Response : the response from the destination. Call `.json()` on the response to see the text.
     """
-        
+
+    # parse the info dict, required arguments
+    QB_Realm_Hostname = info['QB-Realm-Hostname']
+    Authorization = info['Authorization']
+    table = info['DBID']
+
+    # optional arguments r/badcode
+    if 'User-Agent' in info:
+        User_Agent = info['User-Agent']
+    else:
+        User_Agent = 'qBandas User'
+
+    if "fieldsToReturn" in info:
+        fieldsToReturn = info['fieldsToReturn']
+    else:
+        fieldsToReturn = None
+
+    if 'mergeFieldId' in info:
+        mergeFieldId = info['mergeFieldId']
+    else:
+        mergeFieldId = None
+
     headers = {
         'QB-Realm-Hostname': QB_Realm_Hostname,
         'User-Agent': User_Agent,
@@ -214,6 +206,9 @@ def send_records(
 
     if fieldsToReturn:
         body["fieldsToReturn"] = fieldsToReturn
+
+    if mergeFieldId:
+        body['mergeFieldId'] = mergeFieldId
 
     r = requests.post(
         'https://api.quickbase.com/v1/records', 
@@ -247,6 +242,8 @@ def pretty_str(r: requests.Response) -> str:
 def fastSchema(x: str = "COL1 COL2 COL3", delim:str=None, JSON=False):
     """ Console print the python code or JSON rep for making the schema dict
 
+    DEPRECATED use the CLI for schema generation. 
+    
     Parameters
     ----------
     x
@@ -389,3 +386,60 @@ def write_schema(df: pd.DataFrame, f: typing.IO, space: int=32) -> None:
     out = out[:-2] + '\n}'
 
     f.write(out)
+
+def upload(df: pd.DataFrame, schema: dict, info: dict) -> list[requests.Response]:
+    """
+    Send tabular data to QuickBase.
+
+    Parameters
+    ----------
+    df : pd.DataFrame
+        The tabular data to send. 
+    schema : dict
+        Specifies the field IDs and the data type (with additional formatting requirements) for each column in the dataframe. Use read_schema() to get this Python object. 
+    info : dict
+        Specify who is sending the data and where it is going. This info dict has three required keys. Here is an example `info` dict.
+        
+        ```python
+        info = {
+            "QB-Realm-Hostname": 'demo.quickbase.com',
+            "Authorization": 'QB-USER-TOKEN {TOKEN}',
+            "DBID": "abcdef123"
+        }
+        ```
+
+        Required arguments are "QB-Realm-Hostname", "Authorization", and "DBID". "DBID" is the destination table identifier on QuickBase. Can be found in the URL when viewing the table. You can also find it in the app protperties if you are an admin. "QB-Realm-Hostname" is your Quickbase subdomain. "Authorization" is the Quickbase authentication scheme you are using to authenticate the request, as described on the [authorization page](https://developer.quickbase.com/auth).
+
+        Optional keys are "mergeFieldId", "User-Agent", and "fieldsToReturn". "mergeFieldId" gets a integer value to specify how to merge these new records into the exsiting records. The default is 3 or Record ID#. "fieldsToReturn" gets a list of integers specifying fields to get back after the upload. If you request any fields, you will automatically get the field's Records ID#s. "User-Agent" lets you name yourself for the API. Defaults to 'qBandas User'.
+
+        A final optional key is "Payload-Size". This key takes and integer value that specifies the number of records to send per API request. The endpoint only supports payloads up to 10MB. Be careful with this setting, if it is too small performance will be significatly decreased; too large and you will have your requests rejected. Defaults to 20,000. 
+
+        More information about all of these keys can be found on the QuickBase API [docs](https://developer.quickbase.com/operation/upsert). 
+
+    Returns
+    -------
+    list[requests.Response] : a list of responses from the endpoint about each payload you sent. Your df will be divided into payloads to accomodate the size limitations of the endpoint. 
+    """
+
+    if "Payload-Size" in info:
+        payloads = full_transform(df, schema, size=info["Payload-Size"])
+        del info["Payload-Size"] # we don't want this key for send_records
+    else:
+        payloads = full_transform(df, schema)
+
+    out = [None] * len(payloads)
+    for i, payload in enumerate(payloads):
+        try:
+            r = send_records(payload, info)
+            out[i] = r
+            r.raise_for_status()
+        except Exception as e:
+            import warnings
+            warnings.warn(f"Payload {i} bad response")
+            warnings.warn(pretty_str(r))
+    
+    return out
+
+
+
+    

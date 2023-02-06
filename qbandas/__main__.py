@@ -26,9 +26,9 @@ argParser.add_argument('-s', '--schema-file',
 
 argParser.add_argument('--delim',  
     help="The delimiter of the data file. Defaults to ','.",
-    choices=[',', '\t', ' ', ';'],
+    choices=[',', '\t', ' ', ';', '|'],
     default=',',
-    metavar="file"
+    metavar="delimiter"
 )
 
 args = argParser.parse_args()
