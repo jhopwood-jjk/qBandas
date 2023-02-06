@@ -1,0 +1,21 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "qBandas"
+version = "0.0.4"
+authors = [
+  { name="Joshua Hopwood" },
+]
+description = "Integrates the popular data handling library Pandas and the QuickBase API"
+readme = "README.md"
+requires-python = ">=3.7"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/jhopwood-jjk/qBandas"
