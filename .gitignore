@@ -1,3 +1,5 @@
 src/qbandas/__pycache__
 data.csv
 test
+dist/*
+notes.md

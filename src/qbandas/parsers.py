@@ -1,7 +1,5 @@
 import pandas as pd
 from datetime import datetime
-# import phonenumbers
-
 
 def parse_default(x: object) -> dict:
     """ Pack a value into the default QuickBase API format
