@@ -4,7 +4,7 @@ import requests, re, json, typing
 import pandas as pd
 from functools import partial
 
-from .parsers import parse_default, parse_duration, parse_date, parse_datetime, parse_phonenum
+from parsers import parse_default, parse_duration, parse_date, parse_datetime, parse_phonenum
 
 def transform(df: pd.DataFrame, col_types: dict) -> pd.DataFrame:
     """ Transforms the values in df into values that the QuickBase API can use

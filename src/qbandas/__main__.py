@@ -31,6 +31,11 @@ argParser.add_argument('--delim',
     metavar="delimiter"
 )
 
+argParser.add_argument("-t", "--col-types", 
+    action='store_true',
+    help='Create a schema file from the specified data file. See -d and -s.',
+)
+
 args = argParser.parse_args()
 if args.create_schema:
 
@@ -45,4 +50,13 @@ if args.create_schema:
         schema_path = open(os.path.join(os.getcwd(), 'schema.json'), 'a')
     with open(schema_path, 'a') as f:
         write_schema(df, f)
+    exit()
     
+if args.col_types:
+    import config
+    from textwrap import fill
+    out = "data-type: desc\n" + ('-'*80) + '\n'
+    for key in config.field_types:
+        out += fill(f"-{key}: " + config.field_types[key], 80, subsequent_indent="\t") + '\n'
+    print(out, end='')
+    exit()
