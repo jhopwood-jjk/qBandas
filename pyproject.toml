@@ -3,8 +3,8 @@ requires = ["hatchling", "pandas"]
 build-backend = "hatchling.build"
 
 [project]
-name = "qBandas"
-version = "0.0.4"
+name = "qbandas"
+version = "0.0.5"
 authors = [
   { name="Joshua Hopwood" },
 ]

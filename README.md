@@ -14,15 +14,32 @@ The disadvantages of this approach compared to a pipeline are:
 
 ## Setup
 
-To use this library, you will need to clone this repository to your project. This package is not currently avaiable from the Python Package Index. From your terminal run the following command. Note, you will need git installed to do this. You can find the lastest version [here](https://git-scm.com/).
+To use this library, simply get it from pypi. First, update your pip.
+
+```bash
+python3 -m pip install --upgrade pip
+```
+Then install qBandas. 
+
+```bash
+python3 -m pip install qbandas
+```
+
+You can now use it through import.
+
+```python
+import qbandas as qb
+```
+
+Alternatively, you can clone this repository to your project. From your terminal run the following command. Note, you will need git installed to do this. You can find the lastest version [here](https://git-scm.com/).
 
 ```bash
 git clone https://github.com/jhopwood-jjk/qBandas.git
 ```
 
-Alternatively, you can download this repo as a zip and place it in your project folder.
+If you don't like the other aproahes, You can download this repo as a zip and place it in your project folder. This is probably the worst method, but it works. 
 
-To use qBandas in your project, use the following import. Note the casing. 
+For the last to methods to use qBandas in your project, use the following import. Note the casing. 
 
 ```python
 import qBandas.qbandas as qb

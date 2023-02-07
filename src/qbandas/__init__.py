@@ -5,15 +5,9 @@ import requests, re, json, typing
 import pandas as pd
 from functools import partial
 
-from parsers import parse_default, parse_duration, parse_date, parse_datetime, parse_phonenum
+from .parsers import parse_default, parse_duration, parse_date, parse_datetime, parse_phonenum
 
-print("Using qBandas version 0.0.3")
-print("Read the docs https://github.com/jhopwood-jjk/qBandas")
-
-def transform(
-    df: pd.DataFrame, 
-    col_types: dict 
-    ) -> pd.DataFrame:
+def transform(df: pd.DataFrame, col_types: dict) -> pd.DataFrame:
     """ Transforms the values in df into values that the QuickBase API can use
     
     After using this function, call `def payload(df, fids)` on the output to get
@@ -239,33 +233,7 @@ def pretty_str(r: requests.Response) -> str:
         text = text.replace(match, f"[...{n+1} items...]")
     return text
 
-def fastSchema(x: str = "COL1 COL2 COL3", delim:str=None, JSON=False):
-    """ Console print the python code or JSON rep for making the schema dict
-
-    DEPRECATED use the CLI for schema generation. 
-    
-    Parameters
-    ----------
-    x
-        The string contatining all column names seperated by a delimeter
-    delim
-        the deliminating string. None means split on whitespace
-    JSON
-        format the printing for JSON
-
-    """
-    if delim:
-        t = x.split(delim)
-    else:
-        t = x.split()
-    print("schema = {" if not JSON else "{")
-    for item in t:
-        print(f'\t"{item.strip()}": '+('(000, None),'if not JSON else '"000 None"'))
-
-    print('}')
-
-def full_transform(df: pd.DataFrame, schema: dict[tuple[int, str]],
-    size: int = 20_000) -> list[list[dict]]:
+def full_transform(df: pd.DataFrame, schema: dict[tuple[int, str]], size: int = 20_000) -> list[list[dict]]:
     """
     Turn a dataframe into payloads for the quickbase API
 
@@ -400,7 +368,7 @@ def upload(df: pd.DataFrame, schema: dict, info: dict) -> list[requests.Response
     info : dict
         Specify who is sending the data and where it is going. This info dict has three required keys. Here is an example `info` dict.
         
-        ```python
+        ``` python
         info = {
             "QB-Realm-Hostname": 'demo.quickbase.com',
             "Authorization": 'QB-USER-TOKEN {TOKEN}',
