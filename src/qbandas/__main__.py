@@ -33,7 +33,7 @@ argParser.add_argument('--delim',
 
 argParser.add_argument("-t", "--col-types", 
     action='store_true',
-    help='Create a schema file from the specified data file. See -d and -s.',
+    help='List the colmn types and their arguments.',
 )
 
 args = argParser.parse_args()
