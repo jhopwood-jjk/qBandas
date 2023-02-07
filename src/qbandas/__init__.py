@@ -1,5 +1,4 @@
 """ Integrates the popular data handling library Pandas and the QuickBase API
-
 """
 import requests, re, json, typing
 import pandas as pd
