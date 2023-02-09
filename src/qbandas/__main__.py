@@ -1,6 +1,9 @@
 import argparse, os, pathlib
 import pandas as pd
-from __init__ import write_schema
+
+from .schema import write_schema
+from .config import field_types
+from textwrap import fill
 
 argParser = argparse.ArgumentParser(
     prog = 'qbandas',
@@ -42,21 +45,20 @@ if args.create_schema:
     data_path = args.data_file
     if not data_path:
         data_path = os.path.join(os.getcwd(), 'data.csv')
-    with open(data_path, 'r') as f:
-        df = pd.read_table(data_path, delimiter=args.delim)
+    df = pd.read_table(data_path, delimiter=args.delim)
 
     schema_path = args.schema_file
     if not schema_path:
-        schema_path = open(os.path.join(os.getcwd(), 'schema.json'), 'a')
-    with open(schema_path, 'a') as f:
-        write_schema(df, f)
+        schema_path = os.path.join(os.getcwd(), 'schema.json')
+    write_schema(df, schema_path)
+    
     exit()
     
 if args.col_types:
-    import config
-    from textwrap import fill
-    out = "data-type: desc\n" + ('-'*80) + '\n'
-    for key in config.field_types:
-        out += fill(f"-{key}: " + config.field_types[key], 80, subsequent_indent="\t") + '\n'
+    out = "data types:\n"
+    for key in field_types:
+        stub = f"  -{key}"
+        gap = ' '*(16 - len(stub)) if len(stub) < 16 else '\n\t\t'
+        out += stub + gap + fill(field_types[key], 80, subsequent_indent="\t\t") + '\n'
     print(out, end='')
     exit()
