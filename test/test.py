@@ -1,28 +1,26 @@
-import qbandas as qb
+import sys, os; sys.path.append(os.path.abspath(".."));
+import src.qbandas as qb;
 import pandas as pd
-import json, re
 
-def str_format_payloads(x):
-    text = json.dumps(x, indent=2)
-    text = re.sub(r"\{\s*(\"value\": .*)\s*\}", r"{\1}", text)
-    text = re.sub(r"\},\s*\{", r"}, {", text)
-    return text
+import src.qbandas.util as util
 
 if __name__ == '__main__':
     
     # create a df for testing 
     df = pd.read_csv("data.csv")
-    print("parsing the following data...")
-    print(df)
+    print("DATA: ", df)
 
     # test reading a schema from json
     schema = qb.read_schema('schema.json')
-    print("schema read from file...")
-    print(json.dumps(schema, indent=2))
+    print("SCHEMA: ")
+    print("COL_TYPES: ", util.str_dict(schema[0]))
+    print("FIDS: ", util.str_dict(schema[1]))
 
     # transform the data
-    out = qb.full_transform(df, schema=schema)
-    print("formatted data as...")
-    print(str_format_payloads(out))
+    out = qb.format_values(df, schema[0])
+    print("FORMATTED: ", out)
+
+    out = qb.list_records(out, schema[1])
+    print("RECORDS: ", util.str_dict(out))
 
 

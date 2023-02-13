@@ -2,8 +2,7 @@
     "nums":     "6 numeric",
     "names":    "7 text",
     "dates":    "8 date %m.%d.%Y",
-    "drop_me":  "drop",
     "durr":     "9 duration seconds",
     "dt":       "10 datetime '%d %B %Y %H:%M %p'",
-    "phony":    "11 phone ###.###.####x####"
+    "phony":    "11 phone-number ###.###.####x####"
 }

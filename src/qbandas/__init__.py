@@ -1,65 +1,80 @@
 """ Integrates the popular data handling library Pandas and the QuickBase API
 """
 import requests
-import pandas as pd
 from functools import partial
+from typing import Iterator
+
+import pandas as pd
 
 from .config import field_types
+from .schema import *
 
 def format_values(df: pd.DataFrame, col_types: dict) -> pd.DataFrame:
     """ Reformats the values in a dataframe into values that the QuickBase API can use
+
+    WARNING: Function not intended for enduser. See `qb.upload()`.
     
     Parameters
     ----------
     df : pd.DataFrame
-    
+        The DataFrame containing the records that you want to send to QuickBase. 
+    col_types : dict
+        Controlls how the columns of the DataFrame are formatted. See `qb.read_schema()` for instructions on how to create and read in this dictonary. 
+
+    Returns
+    -------
+    DataFrame : A copy of the original dataframe with it's values reformatted. 
     """
 
     # Figure out what columns are going where, set operations!
-    requested_cols = set(col_types.keys())
-    actual_cols = set(df.columns)
+    requested_cols = set(col_types.keys())  # from col_types, user specced
+    actual_cols = set(df.columns)           # from df
 
     # check for typos in the schema
     invalid_cols = requested_cols.difference(actual_cols)
     if len(invalid_cols):
-        raise Exception(f"columns {invalid_cols} are invalid")
+        raise Exception(f"columns '{invalid_cols}' are invalid")
 
     # tell enduser about drops
     for col in actual_cols.difference(requested_cols):
-        print(f'column {col} is being dropped')
+        print(f'column \'{col}\' is being dropped')
+
+    out = pd.DataFrame()
 
     # look at only the columns in schema and df
-    out = pd.DataFrame()
     for col in requested_cols.intersection(actual_cols):
 
-        col_type, args = col_types[col][0], col_types[col][1:]
         
+        # parse the spec
+        col_type, args = col_types[col][0], col_types[col][1:]
         print(f"processing column '{col}' as '{col_type}'")
 
-        # Magic lines! Get the related parsing function from config, create
-        # a partial of it with the given arguments, apply it to a copy of the
-        # current column, and save it in the output
-        parsing_func = field_types[col].parsing_func
-        out[col] = df[col].copy().apply(partial(parsing_func, args=args))
-        
-                
+        try:
+            # Magic lines! Get the related parsing function from config, create
+            # a partial of it with the given arguments, apply it to a copy of the
+            # current column, and save it in the output
+            parsing_func = field_types[col_type].parsing_func
+            out[col] = df[col].copy().apply(partial(parsing_func, args=args))
+        except Exception as e:
+            raise Exception(f"Failed parsing column '{col}' with column type '{col_type}' and arguments '{args}'") from e
+
     return out 
 
 def list_records(df: pd.DataFrame, fids: dict) -> list:
     """ Get a list of all the records in your dataframe.
+
+    WARNING: Function not intended for enduser. See `qb.upload()`.
     
     Parameters
     ----------
     df : pandas.Dataframe
-        The dataframe containing the records
+        The DataFrame containing the records that you want to send to QuickBase. The values in this DataFrame shoul be formatted for QuickBase. You can do this by calling `qb.format_values()` or write your own proceedure.
     fids : dict
-        A mapping from columns in df to QuickBase field IDs as strings.
-        Example: `fids = { "column one": "6", "column two": "7" }`
+        A mapping from columns in df to QuickBase field IDs as strings.  See `qb.read_schema()` for instructions on how to create and read in this dictonary. 
         
     Returns
     -------
-    list : all the records in your table
-
+    list : all the records in your table now ready to be sent to the QuickBase API.
     """
     
     # validate the fids
@@ -79,20 +94,25 @@ def list_records(df: pd.DataFrame, fids: dict) -> list:
 
     return out
 
-def send_records(records: list, info: dict) -> tuple:
+def send_records(records: list, info: dict) -> Iterator[dict]:
     """ Send a list of records to a table in a QuickBase app. 
+
+    WARNING: not intended for enduser. see `qb.upload()`.
 
     Parameters
     ----------
     records : list
         A list of dictonaries. Each dictonary is one record with field IDs for keys.
     info : dict
-        Determines the which table in which QuickBase app to send to. See qbandas.upload() for more details. 
+        Determines the which table in which QuickBase app to send to. See `qb.upload()` for more details. 
+
+    Throws
+    ------
+    requests.HTTPError : on bad response from endpoint. 
 
     Returns
     -------
-    A named tuple containing the response information. 
-
+    Iterator[dict] : The json responses from QuickBase. This is mostly for advanced users who want to see stats and such. Visit [this link](https://developer.quickbase.com/operation/upsert) to see the formatting.
     """
 
     # setup destination information
@@ -119,11 +139,17 @@ def send_records(records: list, info: dict) -> tuple:
             headers = headers, 
             json = body
         )
-
+        
         r.raise_for_status()
+        
+
+        yield r.json()
+        
+    
 
 
-def upload(df: pd.DataFrame, col_types: dict, fids: dict, info: dict) -> list[requests.Response]:
+
+def upload(df: pd.DataFrame, schema: tuple|str, info: dict) -> Iterator[dict]:
     """
     Send tabular data to QuickBase.
 
@@ -131,7 +157,7 @@ def upload(df: pd.DataFrame, col_types: dict, fids: dict, info: dict) -> list[re
     ----------
     df : pd.DataFrame
         The tabular data to send. 
-    schema : dict
+    schema : tuple|str
         Specifies the field IDs and the data type (with additional formatting requirements) for each column in the dataframe. Use read_schema() to get this Python object. 
     info : dict
         Specify who is sending the data and where it is going. This info dict has three required keys. Here is an example `info` dict.
@@ -154,10 +180,9 @@ def upload(df: pd.DataFrame, col_types: dict, fids: dict, info: dict) -> list[re
 
     Returns
     -------
-    list[requests.Response] : a list of responses from the endpoint about each payload you sent. Your df will be divided into payloads to accomodate the size limitations of the endpoint. 
+    list[dict] : a list of responses from the endpoint about each payload you sent. Your df will be divided into payloads to accomodate the size limitations of the endpoint. 
     """
-
-    
+    col_types, fids = schema
     formatted = format_values(df, col_types)
     records = list_records(formatted, fids)
     send_records(records, info)

@@ -1,7 +1,7 @@
 import pandas as pd
 from datetime import datetime
 
-def parse_default(x: object) -> dict:
+def parse_default(x: object, args: tuple) -> dict:
     """ Pack a value into the default QuickBase API format
 
     This function is designed to be applied to column from a pd.DataFrame.
@@ -10,27 +10,30 @@ def parse_default(x: object) -> dict:
     ----------
     x
         The value to pack. It can be anything.
+    args
+        UNUSED
 
     Returns
     -------
     the packed value
     """
+
+    if len(args):
+        raise Exception("Default columns take no arguments.")
     if pd.isna(x):
         return None
     return {'value':x}
 
 
-def parse_duration(x: float|int, col: str, units: str = 'milliseconds') -> dict:
+def parse_duration(x: float|int, args: tuple) -> dict:
     """ Pack a number into a duration format for the QuickBase API
     
     Parameters
     ----------
     x
         The value to pack. It should be a number.
-    col
-        The name of the column in the case of an exception
-    units
-        'seconds' or 'milliseconds'
+    args : tuple
+        Arg zero is the duration unit 'seconds' or 'milliseconds'. Defaults to 'seconds'
 
     Returns
     -------
@@ -39,17 +42,18 @@ def parse_duration(x: float|int, col: str, units: str = 'milliseconds') -> dict:
     if pd.isna(x):
         return None
 
+    units = args[0] if len(args) else 'seconds'
+
     if units == 'seconds':
         x *= 1000
     elif units == 'milliseconds':
         pass
     else:
-        raise Exception(f"'{units}' is an invalid duration unit for "\
-            f"column '{col}'")
+        raise Exception(f"'{args[0]}' is not a valid duration unit")
 
     return {'value':int(x)}
     
-def parse_date(x: datetime|str, col: str, format: str = '%Y-%m-%d') -> dict:
+def parse_date(x: datetime|str, args: tuple) -> dict:
     """ Pack a date into the date format for the QuickBase API
     
     Parameters
@@ -69,15 +73,16 @@ def parse_date(x: datetime|str, col: str, format: str = '%Y-%m-%d') -> dict:
     if pd.isna(x):
         return None
 
+    format = args[0] if len(args) else "%m.%d.%Y"
+
     if not isinstance(x, (datetime, str)):
-        raise Exception(f"column '{col}' got invalid data type "\
-            f"'{type(x)}', expected type datetime or str")
+        raise Exception(f"'{type(x)}' cannot be coerced to date")
     elif isinstance(x, str):
         x = datetime.strptime(x, format)
 
     return {'value':x.strftime('%Y-%m-%d')}
 
-def parse_datetime(x: datetime|str, col: str, format: str = '%d%b%Y:%H:%M:%S.%f') -> dict:
+def parse_datetime(x: datetime|str, args: tuple) -> dict:
     """ Pack a datetime into the datetime format for the QuickBase API
     
     Parameters
@@ -97,16 +102,17 @@ def parse_datetime(x: datetime|str, col: str, format: str = '%d%b%Y:%H:%M:%S.%f'
     if pd.isna(x):
         return None
 
+    format = args[0] if len(args) else '%d%b%Y:%H:%M:%S.%f'
+
     if not isinstance(x, (datetime, str)):
-        raise Exception(f"column '{col}' got invalid data type "\
-            f"'{type(x)}', expected type datetime or str")
+        raise Exception(f"'{type(x)}' cannot be coerced to datetime")
     elif isinstance(x, str):
         x = datetime.strptime(x, format)
     
     return {'value':x.strftime('%Y-%m-%dT%H:%M:%SZ')}
 
 
-def parse_phonenum(x: None|str, col: str, format: str= "##########") -> dict:
+def parse_phonenum(x: None|str, args: tuple) -> dict:
     """ Pack a phone string into the phone format for the QuickBase API
     
     Parameters
@@ -124,6 +130,7 @@ def parse_phonenum(x: None|str, col: str, format: str= "##########") -> dict:
     -------
     the packed value
     """
+    format = args[0] if len(args) else "##########"
     
     if pd.isna(x):
         return None
