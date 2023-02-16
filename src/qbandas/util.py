@@ -22,7 +22,7 @@ def str_resp(r: requests.Response) -> str:
     """
 
     text = str_dict(r.json())
-    pattern = r"\[[\d,\s]+\]"
+    pattern = r"\[[\d,\s\n]+\]"
     matches = re.findall(pattern, text)
     for match in matches:
         n = match.count(',') 

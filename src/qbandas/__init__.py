@@ -133,21 +133,15 @@ def send_records(records: list, info: dict) -> Iterator[dict]:
     for i in range(0, len(records), batch_size):
 
         body["data"] = records[i:i+batch_size]
-
+        
         r = requests.post(
             'https://api.quickbase.com/v1/records', 
             headers = headers, 
             json = body
         )
-        
-        r.raise_for_status()
-        
 
-        yield r.json()
+        yield r
         
-    
-
-
 
 def upload(df: pd.DataFrame, schema: tuple|str, info: dict) -> Iterator[dict]:
     """
@@ -185,7 +179,7 @@ def upload(df: pd.DataFrame, schema: tuple|str, info: dict) -> Iterator[dict]:
     col_types, fids = schema
     formatted = format_values(df, col_types)
     records = list_records(formatted, fids)
-    send_records(records, info)
+    return list(send_records(records, info))
 
 
     
