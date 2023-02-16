@@ -1,17 +1,15 @@
 import pandas as pd
 from datetime import datetime
 
-def parse_default(x: object, args: tuple) -> dict:
-    """ Pack a value into the default QuickBase API format
-
-    This function is designed to be applied to column from a pd.DataFrame.
+def _parse_default(x: object, args: tuple) -> dict:
+    """ Pack a value into the default QuickBase API format.
 
     Parameters
     ----------
     x
         The value to pack. It can be anything.
     args
-        UNUSED
+        unused. must be an empty tuple.
 
     Returns
     -------
@@ -19,21 +17,21 @@ def parse_default(x: object, args: tuple) -> dict:
     """
 
     if len(args):
-        raise Exception("Default columns take no arguments.")
+        raise Exception(f"Default columns take no arguments. Cannot use args {args} for value {x} of type {type(x)}.")
     if pd.isna(x):
         return None
     return {'value':x}
 
 
-def parse_duration(x: float|int, args: tuple) -> dict:
-    """ Pack a number into a duration format for the QuickBase API
+def _parse_duration(x: float|int, args: tuple) -> dict:
+    """ Pack a number into duration format for the QuickBase API
     
     Parameters
     ----------
     x
         The value to pack. It should be a number.
     args : tuple
-        Arg zero is the duration unit 'seconds' or 'milliseconds'. Defaults to 'seconds'
+        `agrs[0]` is the duration unit 'seconds' or 'milliseconds'. Defaults to 'seconds'
 
     Returns
     -------
@@ -41,6 +39,8 @@ def parse_duration(x: float|int, args: tuple) -> dict:
     """
     if pd.isna(x):
         return None
+
+    x = int(x)
 
     units = args[0] if len(args) else 'seconds'
 
@@ -49,22 +49,19 @@ def parse_duration(x: float|int, args: tuple) -> dict:
     elif units == 'milliseconds':
         pass
     else:
-        raise Exception(f"'{args[0]}' is not a valid duration unit")
+        raise Exception(f"'{args[0]}' is not a valid duration unit for value {x} of type {type(x)}")
 
-    return {'value':int(x)}
+    return {'value':x}
     
-def parse_date(x: datetime|str, args: tuple) -> dict:
+def _parse_date(x: datetime|str, args: tuple) -> dict:
     """ Pack a date into the date format for the QuickBase API
-    
+
     Parameters
     ----------
     x
         The value to pack. It should be a datetime object or a string
-    col
-        The name of the column in the case of an exception
-    format
-        For help creating datetime format strings, vist 
-        https://docs.python.org/2/library/datetime.html#strftime-and-strptime-behavior.
+    args : tuple
+         `agrs[0]` is the parsing string 
 
     Returns
     -------
@@ -82,18 +79,15 @@ def parse_date(x: datetime|str, args: tuple) -> dict:
 
     return {'value':x.strftime('%Y-%m-%d')}
 
-def parse_datetime(x: datetime|str, args: tuple) -> dict:
+def _parse_datetime(x: datetime|str, args: tuple) -> dict:
     """ Pack a datetime into the datetime format for the QuickBase API
     
     Parameters
     ----------
     x
         The value to pack. It should be a datetime object or a string
-    col
-        The name of the column in the case of an exception
-    format
-        For help creating datetime format strings, vist 
-        https://www.programiz.com/python-programming/datetime/strptime.
+    args : tuple
+         `agrs[0]` is the parsing string 
 
     Returns
     -------
@@ -112,19 +106,15 @@ def parse_datetime(x: datetime|str, args: tuple) -> dict:
     return {'value':x.strftime('%Y-%m-%dT%H:%M:%SZ')}
 
 
-def parse_phonenum(x: None|str, args: tuple) -> dict:
+def _parse_phonenum(x: None|str, args: tuple) -> dict:
     """ Pack a phone string into the phone format for the QuickBase API
     
     Parameters
     ----------
     x
         The value to pack. It should be a string
-    col
-        The name of the column in the case of an exception
-    format
-        the format string for reading the phone number. The phone number 
-        "(123) 456-7890 x123" would have the format string "(###) ###-#### x###"
-        THe extension must come last. It is optional for x to include it.
+    args : tuple
+        `agrs[0]` is the format string for reading the phone number. The phone number "(123) 456-7890 x123" would have the format string "(###) ###-#### x###". The extension must come last. It is optional for x to include it.
 
     Returns
     -------
@@ -136,20 +126,17 @@ def parse_phonenum(x: None|str, args: tuple) -> dict:
         return None
     
     if not isinstance(x, str):
-        raise Exception(f"column '{col}' got invalid data type "\
-            f"'{type(x)}', expected type str")
+        raise Exception(f"type {type(x)} is invalid for value {x}, expected type str")
 
     # a str containing only the digits in order
     try:
         y = [x[i] for i in range(len(x)) if format[i] == '#']
         y = ''.join(y)
     except IndexError:
-        raise Exception(f"column '{col}' got invalid data. "\
-            f"could not parse '{x}' with format '{format}'") 
+        raise Exception(f"could not parse '{x}' with format '{format}'") 
 
     if not y.isnumeric() or len(y) < 10:
-        raise Exception(f"column '{col}' got invalid data. "\
-            f"could not parse '{x}' with format '{format}'") 
+        raise Exception(f"could not parse '{x}' with format '{format}'") 
 
     t = f'({y[0:3]}) {y[3:6]}-{y[6:10]}'
     if len(y) > 10:
