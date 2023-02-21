@@ -1,82 +1,64 @@
-import shlex, json
-import pandas as pd
+"""
+Methods that deal with resolving the structure of local and remote (QuickBase) tables.
+"""
 
-def read_schema(path: str) -> tuple[dict, dict]:
-    """ Read a schema from a JSON file and get a column types and field IDs dictionary
+import json, requests, os
 
-    Entries should have the format `"<column_name>": "<field_ID> <column_type> <*args>"`. This means each key is a column name, and each value is a field ID and column type plus additional formatting arguments. If you do not specify a column, it will be automatically dropped.
-    
-    Here is an example `schema.json`
-    ```json
-    {
-        "PhoneNum": "7 phone ###.###.####",
-        "FirstName": "8 text"
-    }
-    ```
-    
-    Parameters
-    ----------
-    path : str
-        The location of the JSON file
-
-    Returns
-    -------
-    tuple[dict, dict] : the first dictonary is the column types (plus any arguments) and the second is the field IDs
+def pull_schema(DBID: str, name: str = None, **kwargs) -> None:
     """
-    from .config import field_types
-    col_types = {}
-    fids = {}
+    Download a local copy of a table's structure from a QuickBase application.
 
-    raw = json.load(open(path))
-    
-    for col in raw:
-        value = shlex.split(raw[col])
-
-        # check that everything is valid
-        if len(value) < 2:
-            raise Exception(f"column {col} has an invalid format {raw[col]}")
-        if not str(value[0]).isdigit() or int(value[0]) < 1:
-            raise Exception(f"column {col} has an invalid field ID {value[0]}")
-        if not value[1] in field_types:
-            raise Exception(f"column {col} has an invalid type {value[1]}")
-
-        # save the arguments
-        fids[col] = value[0]
-        col_types[col] = value[1:]
-
-    return col_types, fids
-
-def write_schema(df: pd.DataFrame, path: str, space: int=32) -> None:
-    """ Define a generic schema from a dataframe and write it to disk
+    This operation is authorized by `./headers.json`. The schema will be placed into `./schemas/` where other qBandas operations can use it. 
 
     Parameters
     ----------
-    df : pandas.DataFrame
-        The dataframe to create a schema from
-    path : str
-        The path to the file to write the schema to
-    space : int
-        number of chars after the tab but before the type string
+    DBID : str
+        The unique identifier of the table in QuickBase.
+    Name : str
+        The identifier that qBanads should use to refer to this table. Defaults to `DBID`.
     """
-    mapping = {
-        'int64': 'numeric',
-        'float64': 'numeric',
-        'object': 'text',
-        'str': 'text',
-        'bool': 'checkbox',
-        'datetime': 'datetime'
+    # Can set the directory with dir=<dir>
+    dir = kwargs['dir'] if 'dir' in kwargs else os.getcwd()
+
+    # resolve the headers
+    with open(os.path.join(dir, 'headers.json'), 'r') as f:
+            headers = json.load(f)
+
+    # send the request to quickbase
+    params = {
+        'tableId': DBID,
+        'includeFieldPerms': "false"
     }
-    with open(path, 'a') as f:
+    r = requests.get(
+        'https://api.quickbase.com/v1/fields', 
+        params = params, 
+        headers = headers
+    )
+    r.raise_for_status()
+
+    # convert the language in the api to user language
+    type_conversion = {
+        "timestamp": "datetime",
+        "recordid": "numeric",
+        "email": "email-address"
+    }
+
+    # parse the schema from the response
+    schema = dict()
+    schema['_DBID_'] = DBID
+    for field in r.json():
+        _type = field['fieldType']
+        if _type in type_conversion:
+            _type = type_conversion[_type]
+        schema[field['label']] = {
+            'id': field['id'],
+            'type': _type
+        }
+
+    # dump the schmea to disk
+    file_name = (name if name else DBID) + '.json'
+    with open(os.path.join(dir, 'schemas', file_name), 'w') as f:
+        json.dump(schema, f, indent=4)
     
-        # check python's column types and get a list of the schema counterparts
-        types = map(str, df.dtypes)
-        types = map(lambda x: mapping[x] if x in mapping else None, types)
         
-        # magic
-        out = '{\n'
-        for col, typ in zip(df.columns, types):
-            b = ' '*(space-len(col)) if len(col) < 16 else ' '
-            out += f'\t"{col}":' + b + f'"000 {typ}",\n'
-        out = out[:-2] + '\n}'
-
-        f.write(out)
+        

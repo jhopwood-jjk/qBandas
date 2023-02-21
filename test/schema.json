@@ -1,8 +1,39 @@
 {
-    "nums":     "6 numeric",
-    "names":    "7 text",
-    "dates":    "8 date %m.%d.%Y",
-    "durr":     "9 duration seconds",
-    "dt":       "10 datetime '%d %B %Y %H:%M %p'",
-    "phony":    "11 phone-number ###.###.####x####"
+    "_DBID_": "None",
+    "nums": {
+        "id": 6,
+        "type": "numeric"
+    },
+    "names": {
+        "id": 7,
+        "type": "text"
+    }, 
+    "dates":  {
+        "id": 8,
+        "type": "date",
+        "args": {
+            "format": "%m.%d.%Y"
+        }
+    }, 
+    "durr":   {
+        "id": 9,
+        "type": "duration",
+        "args": {
+            "unit": "seconds"
+        }
+    }, 
+    "dt": {
+        "id": 10,
+        "type": "datetime",
+        "args": {
+            "format": "%d %B %Y %H:%M %p"
+        }
+    },
+    "phony": {
+        "id": 11,
+        "type": "phone-number",
+        "args": {
+            "format": "###.###.####x####"
+        }
+    } 
 }
