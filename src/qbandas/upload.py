@@ -13,7 +13,7 @@ def upload_records(df: pd.DataFrame, table_name: str, **kwargs):
     """
     Send a table of records (rows) to a table on QuickBase.
 
-    If no errors are thrown, the data was successfully uploaded to QuickBase. If an error occurs, when _sending_ the data, it is possible that only some of your records will have been uploaded to QuickBase. If that is an issue, please fix the data, and send it all again.
+    If no errors are thrown, the data was successfully uploaded to QuickBase. If an error occurs when sending the data, it is possible that only _some_ of your records will have been uploaded to QuickBase. If that is an issue, please fix the data, and send it all again.
 
     Parameters
     ----------
@@ -23,6 +23,12 @@ def upload_records(df: pd.DataFrame, table_name: str, **kwargs):
         Identifies which table to send the data to. You should use `pull_schema()` to create a valid `table_name`.
     """
 
+    debug = 'debug' in kwargs and kwargs['debug']
+    if debug:
+        from .util import str_dict, str_resp
+        print(df.head())
+    
+
     # setup: read in the headers and the schema
     # Can set the directory with dir=<dir>, defaults to .
     dir = kwargs['dir'] if 'dir' in kwargs else os.getcwd()
@@ -30,6 +36,10 @@ def upload_records(df: pd.DataFrame, table_name: str, **kwargs):
             headers = json.load(f)
     with open(os.path.join(dir, 'schemas', table_name+'.json'), 'r') as f:
             schema = json.load(f)
+
+    if debug:
+        print(str_dict(headers))
+        print(str_dict(schema))
 
     # Check that the columns in the df match the schema
     if 'drop' not in kwargs or not kwargs['drop']:
@@ -43,6 +53,10 @@ def upload_records(df: pd.DataFrame, table_name: str, **kwargs):
     # pack all the values into qb's crazy formats
     packed_df = pd.DataFrame()
     for col in df.columns:
+
+        if col not in schema: # dropped columns
+            continue
+
         col_info = schema[col]
         col_type = col_info['type']
         col_kwargs = col_info['args'] if 'args' in col_info else {}
@@ -52,12 +66,15 @@ def upload_records(df: pd.DataFrame, table_name: str, **kwargs):
             packing_func = field_types[col_type].packing_func
             packed_df[col] = df[col].copy().apply(partial(packing_func, **col_kwargs))
         except Exception as e:
-            raise Exception(f"Failed parsing column '{col}' with column type '{col_type}' and arguments '{col_kwargs}'") from e
+            e.args = (f"Failed parsing column '{col}' with column type '{col_type}' and arguments '{col_kwargs}'", *e.args)
+            raise
 
+    if debug:
+        print(packed_df.head())
 
     # grab the feild ids from schema, rename columns 
-    fids = {k:v['id'] for k,v in schema.items() if k != '_DBID_' and k in df.columns}
-    renamed_df = df.copy().rename(columns=fids) 
+    fids = {k:v['id'] for k,v in schema.items() if k != '_DBID_' and k in packed_df.columns}
+    renamed_df = packed_df.copy().rename(columns=fids) 
 
     # Convert each row to a dictonary, drop keys with null values, create the list of records
     def _row_to_dict(row):
@@ -65,6 +82,9 @@ def upload_records(df: pd.DataFrame, table_name: str, **kwargs):
         row = dict(row)                                         
         return {k: v for k, v in row.items() if not pd.isna(v)} 
     records = list(renamed_df.apply(_row_to_dict, axis=1)) 
+
+    if debug:
+        print(str_dict(records[:5]))
 
      # setup destination information
     body = {"to": schema['_DBID_']}
@@ -83,5 +103,7 @@ def upload_records(df: pd.DataFrame, table_name: str, **kwargs):
             headers = headers, 
             json = body
         )
+        if debug:
+            print(str_resp(r))
         r.raise_for_status()
     

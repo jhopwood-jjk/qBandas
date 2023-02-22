@@ -40,7 +40,8 @@ def pull_schema(DBID: str, name: str = None, **kwargs) -> None:
     type_conversion = {
         "timestamp": "datetime",
         "recordid": "numeric",
-        "email": "email-address"
+        "email": "email-address",
+        "phone": "phone-number"
     }
 
     # parse the schema from the response

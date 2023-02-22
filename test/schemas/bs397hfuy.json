@@ -1,0 +1,47 @@
+{
+    "_DBID_": "bs397hfuy",
+    "nums": {
+        "id": 6,
+        "type": "numeric"
+    },
+    "names": {
+        "id": 7,
+        "type": "text"
+    },
+    "dates": {
+        "id": 8,
+        "type": "date"
+    },
+    "durr": {
+        "id": 9,
+        "type": "duration"
+    },
+    "dt": {
+        "id": 10,
+        "type": "datetime"
+    },
+    "phony": {
+        "id": 11,
+        "type": "phone"
+    },
+    "Date Created": {
+        "id": 1,
+        "type": "datetime"
+    },
+    "Date Modified": {
+        "id": 2,
+        "type": "datetime"
+    },
+    "Record ID#": {
+        "id": 3,
+        "type": "numeric"
+    },
+    "Record Owner": {
+        "id": 4,
+        "type": "user"
+    },
+    "Last Modified By": {
+        "id": 5,
+        "type": "user"
+    }
+}

@@ -6,6 +6,7 @@ import argparse
 from textwrap import fill
 
 from .config import field_types
+from .schema import pull_schema
 
 argParser = argparse.ArgumentParser(
     prog = 'qbandas',
@@ -17,14 +18,18 @@ argParser.add_argument("-t", "--col-types",
     help='List the colmn types and their arguments.',
 )
 
-argParser.add_argument("-h", "--head",
+argParser.add_argument("--head",
     action='store_true',
     help='Create an empty header file in the current working directory.'
 )
 
-# TODO implement
 argParser.add_argument("-s", "--schema",
-    help='Pull a schema from QuickBase. (Not implemented)'
+    help='Pull a schema from QuickBase.',
+    metavar="DBID",
+    nargs=1,
+    required=True,
+    type=str,
+    dest="DBID"
 )
 
 args = argParser.parse_args()
@@ -40,4 +45,7 @@ if args.col_types:
 
 if args.head:
     with open('headers.json', 'w') as f:
-        f.write('{\n\t"QB-Realm-Hostname": "{QB-Realm-Hostname}",\n\t"User-Agent": "{User-Agent}",\n\t"Authorization": "{Authorization}\n"}')
+        f.write('{\n\t"QB-Realm-Hostname": "{QB-Realm-Hostname}",\n\t"User-Agent": "{User-Agent}",\n\t"Authorization": "{Authorization}"\n}')
+
+if args.DBID:
+    pull_schema(args.DBID)

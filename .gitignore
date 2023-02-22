@@ -2,3 +2,4 @@ src/qbandas/__pycache__
 dist/*
 notes.md
 uptest/*
+test/headers.json
