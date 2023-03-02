@@ -4,7 +4,7 @@ Methods that deal with resolving the structure of local and remote (QuickBase) t
 
 import json, requests, os
 
-def pull_schema(DBID: str, name: str = None, **kwargs) -> None:
+def pull_schema(DBID: str, schema_name: str = None, **kwargs) -> None:
     """
     Download a local copy of a table's structure from a QuickBase application.
 
@@ -14,7 +14,7 @@ def pull_schema(DBID: str, name: str = None, **kwargs) -> None:
     ----------
     DBID : str
         The unique identifier of the table in QuickBase.
-    Name : str
+    schema_name : str
         The identifier that qBanads should use to refer to this table. Defaults to `DBID`.
     """
     # Can set the directory with dir=<dir>
@@ -57,9 +57,85 @@ def pull_schema(DBID: str, name: str = None, **kwargs) -> None:
         }
 
     # dump the schmea to disk
-    file_name = (name if name else DBID) + '.json'
+    file_name = (schema_name if schema_name else DBID) + '.json'
     with open(os.path.join(dir, 'schemas', file_name), 'w') as f:
         json.dump(schema, f, indent=4)
     
         
-        
+def add_args(schema_name: str, field: str, **kwargs):
+    """
+    Append new config options (args) for a field in a schema.
+
+    Parameters
+    ----------
+    schema_name : str
+        The schema to modify.
+    field : str
+        This field will be configured.
+    **kwargs
+        The arguments to add.
+
+    Examples
+    --------
+    ``` 
+    >>> import qbandas as qb
+    TODO
+    ```
+    """
+
+    # Can set the directory with dir=<dir>
+    dir = os.getcwd()
+    if 'dir' in kwargs:
+        dir = kwargs['dir']
+        del kwargs['dir']
+
+    # read in the schema
+    file_name = schema_name + '.json'
+    with open(os.path.join(dir, 'schemas', file_name), 'r') as f:
+        schema = json.load(f)
+
+    # append the new arguments
+    if field not in schema:
+        raise Exception(f"The field {field} is not in the schema {schema_name}")
+    if 'args' not in schema[field]:
+        schema[field]['args'] = kwargs
+    else:
+        schema[field]['args'] = schema[field]['args'] | kwargs
+
+    # put the schema pack into the file
+    with open(os.path.join(dir, 'schemas', file_name), 'w') as f:
+        json.dump(schema, f, indent=4)
+
+def set_args(schema_name: str, field: str, **kwargs):
+    """
+    Set the config options (args) for a field in a schema.
+
+    Parameters
+    ----------
+    schema_name : str
+        The schema to modify.
+    field : str
+        This field will be configured.
+    **kwargs
+        The arguments to add.
+    """
+
+    # Can set the directory with dir=<dir>
+    dir = os.getcwd()
+    if 'dir' in kwargs:
+        dir = kwargs['dir']
+        del kwargs['dir']
+
+    # read in the schema
+    file_name = schema_name + '.json'
+    with open(os.path.join(dir, 'schemas', file_name), 'r') as f:
+        schema = json.load(f)
+
+    # set the arguments
+    if field not in schema:
+        raise Exception(f"The field {field} is not in the schema {schema_name}")
+    schema[field]['args'] = kwargs
+
+    # put the schema pack into the file
+    with open(os.path.join(dir, 'schemas', file_name), 'w') as f:
+        json.dump(schema, f, indent=4)

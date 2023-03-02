@@ -6,22 +6,23 @@
     },
     "names": {
         "id": 7,
-        "type": "text"
-    }, 
-    "dates":  {
+        "type": "text",
+        "args": {}
+    },
+    "dates": {
         "id": 8,
         "type": "date",
         "args": {
             "format": "%m.%d.%Y"
         }
-    }, 
-    "durr":   {
+    },
+    "durr": {
         "id": 9,
         "type": "duration",
         "args": {
             "unit": "seconds"
         }
-    }, 
+    },
     "dt": {
         "id": 10,
         "type": "datetime",
@@ -35,5 +36,5 @@
         "args": {
             "format": "###.###.####x####"
         }
-    } 
+    }
 }
