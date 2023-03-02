@@ -27,7 +27,6 @@ argParser.add_argument("-s", "--schema",
     help='Pull a schema from QuickBase.',
     metavar="DBID",
     nargs=1,
-    required=True,
     type=str,
     dest="DBID"
 )
@@ -48,4 +47,4 @@ if args.head:
         f.write('{\n\t"QB-Realm-Hostname": "{QB-Realm-Hostname}",\n\t"User-Agent": "{User-Agent}",\n\t"Authorization": "{Authorization}"\n}')
 
 if args.DBID:
-    pull_schema(args.DBID)
+    pull_schema(*args.DBID)

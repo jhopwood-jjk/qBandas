@@ -4,7 +4,7 @@ Methods that deal with resolving the structure of local and remote (QuickBase) t
 
 import json, requests, os
 
-def pull_schema(DBID: str, schema_name: str = None, **kwargs) -> None:
+def pull_schema(DBID: str, **kwargs) -> None:
     """
     Download a local copy of a table's structure from a QuickBase application.
 
@@ -14,8 +14,6 @@ def pull_schema(DBID: str, schema_name: str = None, **kwargs) -> None:
     ----------
     DBID : str
         The unique identifier of the table in QuickBase.
-    schema_name : str
-        The identifier that qBanads should use to refer to this table. Defaults to `DBID`.
     """
     # Can set the directory with dir=<dir>
     dir = kwargs['dir'] if 'dir' in kwargs else os.getcwd()
@@ -57,8 +55,9 @@ def pull_schema(DBID: str, schema_name: str = None, **kwargs) -> None:
         }
 
     # dump the schmea to disk
-    file_name = (schema_name if schema_name else DBID) + '.json'
-    with open(os.path.join(dir, 'schemas', file_name), 'w') as f:
+    if not os.path.exists(os.path.join(dir, 'schemas')):
+        os.makedirs(os.path.join(dir, 'schemas'))
+    with open(os.path.join(dir, 'schemas', DBID + '.json'), 'w+') as f:
         json.dump(schema, f, indent=4)
     
         
