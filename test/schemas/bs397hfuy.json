@@ -22,7 +22,63 @@
     },
     "phony": {
         "id": 11,
-        "type": "phone"
+        "type": "phone-number"
+    },
+    "Addressy": {
+        "id": 12,
+        "type": "address"
+    },
+    "Addressy: Street 1": {
+        "id": 13,
+        "type": "text"
+    },
+    "Addressy: Street 2": {
+        "id": 14,
+        "type": "text"
+    },
+    "Addressy: City": {
+        "id": 15,
+        "type": "text"
+    },
+    "Addressy: State": {
+        "id": 16,
+        "type": "text"
+    },
+    "Addressy: Zip": {
+        "id": 17,
+        "type": "text"
+    },
+    "Addressy: Country": {
+        "id": 18,
+        "type": "text"
+    },
+    "Addruse": {
+        "id": 19,
+        "type": "address"
+    },
+    "Addruse: Street 1": {
+        "id": 20,
+        "type": "text"
+    },
+    "Addruse: Street 2": {
+        "id": 21,
+        "type": "text"
+    },
+    "Addruse: City": {
+        "id": 22,
+        "type": "text"
+    },
+    "Addruse: State": {
+        "id": 23,
+        "type": "text"
+    },
+    "Addruse: Zip": {
+        "id": 24,
+        "type": "text"
+    },
+    "Addruse: Country": {
+        "id": 25,
+        "type": "text"
     },
     "Date Created": {
         "id": 1,

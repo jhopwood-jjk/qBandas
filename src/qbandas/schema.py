@@ -42,17 +42,40 @@ def pull_schema(DBID: str, **kwargs) -> None:
         "phone": "phone-number"
     }
 
+    address_subfields = {
+        ": Street 1": 1,
+        ": Street 2": 2,
+        ": City": 3,
+        ": State": 4,
+        ": Zip": 5,
+        ": Country": 6
+    }
+
     # parse the schema from the response
     schema = dict()
     schema['_DBID_'] = DBID
     for field in r.json():
+
+        # address fields send extra unlabeled info that we cannot use. remove it
+        if field['label'] in ['Street 1', 'Street 2', 'City', 'State/Region', 'Postal Code', 'Country']:
+            continue
+
         _type = field['fieldType']
         if _type in type_conversion:
             _type = type_conversion[_type]
+        
         schema[field['label']] = {
             'id': field['id'],
             'type': _type
         }
+
+        # recreate subfields for adresses with propper names
+        if _type == 'address':
+            for sufix, fid_offset in address_subfields.items():
+                schema[field['label'] + sufix] = {
+                    'id': field['id'] + fid_offset,
+                    'type': "text"
+                }
 
     # dump the schmea to disk
     if not os.path.exists(os.path.join(dir, 'schemas')):
