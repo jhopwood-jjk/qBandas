@@ -63,7 +63,7 @@ def upload_records(df: pd.DataFrame, table_name: str, **kwargs):
 
         # Magic lines! Get the related parsing function from config, create a partial of it with the given column arguments, apply it to a copy of the current column, and save it in the output
         try:
-            packing_func = field_types[col_type].packing_func
+            packing_func = field_types[col_type]['pack']
             packed_df[col] = df[col].copy().apply(partial(packing_func, **col_kwargs))
         except Exception as e:
             e.args = (f"Failed parsing column '{col}' with column type '{col_type}' and arguments '{col_kwargs}'", *e.args)

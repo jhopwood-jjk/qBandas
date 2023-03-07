@@ -6,6 +6,9 @@ from datetime import datetime
 
 import pandas as pd
 
+# a string to func mapping allowing the packing funcs to be assigned in data/field_types.json
+_pack_funcs = {}
+
 def _pack_default(x: object) -> dict:
     """
     Pack a value into the default QuickBase API format.
@@ -22,6 +25,9 @@ def _pack_default(x: object) -> dict:
     if pd.isna(x):
         return None
     return {'value':x}
+
+_pack_funcs["default"] = _pack_default
+
 
 
 def _pack_duration(x: float|int|str, unit: str='seconds') -> dict:
@@ -52,6 +58,9 @@ def _pack_duration(x: float|int|str, unit: str='seconds') -> dict:
         raise Exception(f"'{unit}' is not a valid duration unit for value {x} of type {type(x)}")
 
     return {'value':x}
+
+_pack_funcs["duration"] = _pack_duration
+
     
 def _pack_date(x: datetime|str, format: str = "%m.%d.%Y") -> dict:
     """
@@ -78,6 +87,9 @@ def _pack_date(x: datetime|str, format: str = "%m.%d.%Y") -> dict:
 
     return {'value':x.strftime('%Y-%m-%d')}
 
+_pack_funcs["date"] = _pack_date
+    
+
 def _pack_datetime(x: datetime|str, format: str = '%d%b%Y:%H:%M:%S.%f') -> dict:
     """
     Pack a datetime into the datetime format for the QuickBase API
@@ -102,6 +114,8 @@ def _pack_datetime(x: datetime|str, format: str = '%d%b%Y:%H:%M:%S.%f') -> dict:
     
     return {'value':x.strftime('%Y-%m-%dT%H:%M:%SZ')}
 
+_pack_funcs["datetime"] = _pack_datetime
+   
 
 def _pack_phonenum(x: None|str, format: str = "##########") -> dict:
     """
@@ -141,3 +155,5 @@ def _pack_phonenum(x: None|str, format: str = "##########") -> dict:
 
     #return "(123) 456-7890 x123"
     return {'value':t}
+
+_pack_funcs["phonenum"] = _pack_phonenum

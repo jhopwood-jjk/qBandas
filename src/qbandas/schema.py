@@ -84,25 +84,18 @@ def pull_schema(DBID: str, **kwargs) -> None:
         json.dump(schema, f, indent=4)
     
         
-def add_args(schema_name: str, field: str, **kwargs):
+def add_args(schema_name: str, *args, **kwargs):
     """
-    Append new config options (args) for a field in a schema.
+    Append new config options (args) for fields in a schema.
 
     Parameters
     ----------
     schema_name : str
         The schema to modify.
-    field : str
-        This field will be configured.
+    *args
+        These fields will be configured.
     **kwargs
         The arguments to add.
-
-    Examples
-    --------
-    ``` 
-    >>> import qbandas as qb
-    TODO
-    ```
     """
 
     # Can set the directory with dir=<dir>
@@ -117,27 +110,28 @@ def add_args(schema_name: str, field: str, **kwargs):
         schema = json.load(f)
 
     # append the new arguments
-    if field not in schema:
-        raise Exception(f"The field {field} is not in the schema {schema_name}")
-    if 'args' not in schema[field]:
-        schema[field]['args'] = kwargs
-    else:
-        schema[field]['args'] = schema[field]['args'] | kwargs
+    for field in args:
+        if field not in schema:
+            raise Exception(f"The field {field} is not in the schema {schema_name}")
+        if 'args' not in schema[field]:
+            schema[field]['args'] = kwargs
+        else:
+            schema[field]['args'] = schema[field]['args'] | kwargs
 
     # put the schema pack into the file
     with open(os.path.join(dir, 'schemas', file_name), 'w') as f:
         json.dump(schema, f, indent=4)
 
-def set_args(schema_name: str, field: str, **kwargs):
+def set_args(schema_name: str, *args, **kwargs):
     """
-    Set the config options (args) for a field in a schema.
+    Set the config options (args) for fields in a schema.
 
     Parameters
     ----------
     schema_name : str
         The schema to modify.
-    field : str
-        This field will be configured.
+    *args
+        These fields will be configured.
     **kwargs
         The arguments to add.
     """
@@ -154,9 +148,10 @@ def set_args(schema_name: str, field: str, **kwargs):
         schema = json.load(f)
 
     # set the arguments
-    if field not in schema:
-        raise Exception(f"The field {field} is not in the schema {schema_name}")
-    schema[field]['args'] = kwargs
+    for field in args:
+        if field not in schema:
+            raise Exception(f"The field {field} is not in the schema {schema_name}")
+        schema[field]['args'] = kwargs
 
     # put the schema pack into the file
     with open(os.path.join(dir, 'schemas', file_name), 'w') as f:
