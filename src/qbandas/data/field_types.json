@@ -1,6 +1,6 @@
 {
     "text": {
-        "desc": "string of text",
+        "desc": "text",
         "pack": "default"
     },
 
@@ -15,7 +15,7 @@
     },  
 
     "multiple-choice-text": {
-        "desc": "string indicating selected option", 
+        "desc": "text indicating selected option", 
         "pack": "default"
     },
 
@@ -25,7 +25,7 @@
     },
 
     "address": {
-        "desc": "composite field. there must be 4 columns in your datatframe for each address field on quickbase. street address, city, state, zip",
+        "desc": "composite field. there must be six columns in your datatframe for each address field on quickbase. street 1, street 2, city, state, zip, country",
         "pack": "default"
     }, 
 

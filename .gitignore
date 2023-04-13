@@ -3,3 +3,5 @@ dist/*
 notes.md
 uptest/*
 test/headers.json
+test/__pycache__
+.pytest_cache

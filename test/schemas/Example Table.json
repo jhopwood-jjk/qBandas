@@ -2,17 +2,11 @@
     "_DBID_": "bs397hfuy",
     "nums": {
         "id": 6,
-        "type": "numeric",
-        "args": {
-            "argy": "Arga"
-        }
+        "type": "numeric"
     },
     "names": {
         "id": 7,
-        "type": "text",
-        "args": {
-            "argy": "Arga"
-        }
+        "type": "text"
     },
     "dates": {
         "id": 8,
