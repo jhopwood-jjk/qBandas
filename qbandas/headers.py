@@ -137,12 +137,12 @@ def valid(*, warn_: bool = False, **kwargs) -> bool:
         return False
 
     # check hostname
-    if not re.match(r'$[a-zA-Z]+\.quickbase\.com^', contents["QB-Realm-Hostname"]):
+    if not re.match(r'^[a-zA-Z]+\.quickbase\.com$', contents["QB-Realm-Hostname"]):
         if warn_: warn(f'header file: {header_path} has invalid hostname')
         return False
     
     # check authorization
-    if not re.match(r'$QB-(USER|TEMP)-TOKEN \w{6}-\w{3}-\w-\w{26}^', contents["Authorization"]):
+    if not re.match(r'^QB-(USER|TEMP)-TOKEN \w{6}_\w{3}_\w_\w{26}$', contents["Authorization"]):
         if warn_: warn(f'header file: {header_path} has invalid authorization')
         return False
 

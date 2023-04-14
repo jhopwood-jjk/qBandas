@@ -20,7 +20,7 @@ class TestHeaders(unittest.TestCase):
         '''Test that a valid headerfile is detected as such'''
         self.assertFalse(exists(headers.HEADER_FILE_NAME))
         headers.create(host='demo.quickbase.com', auth='QB-USER-TOKEN xxxxxx_xxx_x_xxxxxxxxxxxxxxxxxxxxxxxxxx')
-        self.assertTrue(headers.valid())
+        self.assertTrue(headers.valid(warn_=True))
 
     def test_invalid(self):
         '''Verify that this headerfile is invalid'''
