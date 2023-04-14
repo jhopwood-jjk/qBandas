@@ -1,4 +1,5 @@
 """
+TODO refactor this. PEP 8?
 Configures the types of columns supported by qbandas.
 """
 

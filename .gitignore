@@ -1,7 +1,4 @@
-src/qbandas/__pycache__
+__pycache__
 dist/*
 notes.md
-uptest/*
-test/headers.json
-test/__pycache__
-.pytest_cache
+headers.json

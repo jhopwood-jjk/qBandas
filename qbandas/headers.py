@@ -2,12 +2,15 @@ import os
 import re
 import json
 from os.path import join, exists as p_exists
-from textwrap import dedent
 from warnings import warn
 
 HEADER_FILE_NAME = 'headers.json'
 
-def create(interactive: bool = False, repair: bool = False, **kwargs) -> None:
+DEFAULT_HOST = '<demo.quickbase.com>'
+DEFAULT_USER = 'user'
+DEFAULT_AUTH = '<QB-USER-TOKEN xxxxxx_xxx_x_xxxxxxxxxxxxxxxxxxxxxxxxxx>'
+
+def create(interactive: bool = False, repair: bool = False, *, host: str = DEFAULT_HOST, user: str = DEFAULT_USER, auth: str = DEFAULT_AUTH, **kwargs) -> None:
     '''
     TODO investigate unit test failures 
 
@@ -19,6 +22,12 @@ def create(interactive: bool = False, repair: bool = False, **kwargs) -> None:
         True means execution will pause and prompt you to give the content of the header file if it doesn't exist or needs repairs. False will dump a skeleton file. Default is False.
     repair : bool
         If the header file is invalid, it will be overwritten with either interactive input, or a template file. Default is False.
+    host : str
+        The QuickBase realm hostname
+    user : str
+        The name of the user agent
+    auth : str
+        The authorization or API token
     **kwargs 
         key word arguments
 
@@ -43,10 +52,6 @@ def create(interactive: bool = False, repair: bool = False, **kwargs) -> None:
             return
         elif not repair:
             return
-        
-    host = r'<demo.quickbase.com>'
-    user = r'user'
-    auth = r'<QB-USER-TOKEN xxxxxx_xxx_x_xxxxxxxxxxxxxxxxxxxxxxxxxx>'
 
     out_path = join(cwd, HEADER_FILE_NAME)
 
@@ -63,13 +68,12 @@ def create(interactive: bool = False, repair: bool = False, **kwargs) -> None:
             auth = input_
 
     with open(out_path, 'w') as f:
-        f.write(dedent(f'''\
-        {'{'}
-            "QB-Realm-Hostname": "{host}",
-            "User-Agent": "{user}",
-            "Authorization": "{auth}"
-        {'}'}\
-        '''))
+        json.dump({
+            'QB-Realm-Hostname': host,
+            'User-Agent': user,
+            'Authorization': auth
+        }, f, indent=4)
+    
 
 def exists(**kwargs) -> bool:
     '''
@@ -92,7 +96,7 @@ def exists(**kwargs) -> bool:
     return p_exists(join(cwd, HEADER_FILE_NAME))
     
 
-def valid(**kwargs) -> bool:
+def valid(*, warn_: bool = False, **kwargs) -> bool:
     '''
     TODO test this 
 
@@ -102,12 +106,14 @@ def valid(**kwargs) -> bool:
 
     Parameters
     ----------
+    warn_ : bool
+        Warn you about what makes the headers file invalid
     **kwargs 
         key word arguments
 
     Returns
     -------
-    bool : the validity of the header file
+    bool : the validity of the headers file
 
     Examples
     --------
@@ -127,17 +133,17 @@ def valid(**kwargs) -> bool:
 
     # check the keys are correct
     if not {"QB-Realm-Hostname","User-Agent","Authorization"} == set(contents):
-        warn(f'header file: {header_path} has invalid keys')
+        if warn_: warn(f'header file: {header_path} has invalid keys')
         return False
 
     # check hostname
     if not re.match(r'$[a-zA-Z]+\.quickbase\.com^', contents["QB-Realm-Hostname"]):
-        warn(f'header file: {header_path} has invalid hostname')
+        if warn_: warn(f'header file: {header_path} has invalid hostname')
         return False
     
     # check authorization
     if not re.match(r'$QB-(USER|TEMP)-TOKEN \w{6}-\w{3}-\w-\w{26}^', contents["Authorization"]):
-        warn(f'header file: {header_path} has invalid authorization')
+        if warn_: warn(f'header file: {header_path} has invalid authorization')
         return False
 
     return True
