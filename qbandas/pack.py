@@ -3,48 +3,65 @@ Functions for converting data from Python's representation to QuickBase's repres
 """
 
 from datetime import datetime
+from typing import Callable, Any
 
 import pandas as pd
 
-# a string to func mapping allowing the packing funcs to be assigned in data/field_types.json
-_pack_funcs = {}
 
-def _pack_default(x: object) -> dict:
+def _pack_default(x: Any) -> dict|None:
     """
     Pack a value into the default QuickBase API format.
 
     Parameters
     ----------
-    x
-        The value to pack. It can be anything.
+    x : Any
+        The value to pack
 
     Returns
     -------
-    the packed value
+    dict | None : the packed value
+
+    Examples
+    --------
+    >>> import qbandas
+    >>> qbandas.pack._pack_default('Object')
+    {'value': 'Object'}
+    >>> qbandas.pack._pack_default(None) == None
+    True
+
     """
+
     if pd.isna(x):
         return None
     return {'value':x}
 
-_pack_funcs["default"] = _pack_default
-
-
-
-def _pack_duration(x: float|int|str, unit: str='seconds') -> dict:
+def _pack_duration(x: float|int|str|None, unit: str = 'seconds') -> dict|None:
     """
     Pack a number into duration format for the QuickBase API
     
     Parameters
     ----------
-    x
-        The value to pack. It should be a number.
+    x : float | int | str | None
+        The value to pack.
     unit : str
         the duration unit 'seconds' or 'milliseconds'. Defaults to 'seconds'
 
     Returns
     -------
-    the packed value
+    dict | None : the packed value
+
+    Examples
+    --------
+    >>> import qbandas
+    >>> qbandas.pack._pack_duration(15)
+    {'value': 15000}
+    >>> qbandas.pack._pack_duration(15, unit = 'milliseconds')
+    {'value': 15}
+    >>> qbandas.pack._pack_duration(None) == None
+    True
+
     """
+
     if pd.isna(x):
         return None
 
@@ -59,23 +76,36 @@ def _pack_duration(x: float|int|str, unit: str='seconds') -> dict:
 
     return {'value':x}
 
-_pack_funcs["duration"] = _pack_duration
 
     
-def _pack_date(x: datetime|str, format: str = "%m.%d.%Y") -> dict:
+def _pack_date(x: datetime|str|None, format: str = "%m.%d.%Y") -> dict|None:
     """
     Pack a date into the date format for the QuickBase API
 
     Parameters
     ----------
-    x
-        The value to pack. It should be a datetime object or a string
+    x :  datetime | str | None
+        The value to pack
     format : str
         the format to decode str dates. Defaults to "%m.%d.%Y"
 
     Returns
     -------
-    the packed value
+    dict | None : the packed value
+
+    Examples
+    --------
+    >>> import qbandas
+    >>> from datetime import datetime as dt
+    >>> qbandas.pack._pack_date('11.22.1972')
+    {'value': '1972-11-22'}
+    >>> qbandas.pack._pack_date(dt(day=10, month=5, year=1754))
+    {'value': '1754-05-10'}
+    >>> qbandas.pack._pack_date('Friday, Nov 11, 2022', format='%A, %b %d, %Y')
+    {'value': '2022-11-11'}
+    >>> qbandas.pack._pack_date(None) == None
+    True
+
     """
     if pd.isna(x):
         return None
@@ -87,23 +117,38 @@ def _pack_date(x: datetime|str, format: str = "%m.%d.%Y") -> dict:
 
     return {'value':x.strftime('%Y-%m-%d')}
 
-_pack_funcs["date"] = _pack_date
     
 
-def _pack_datetime(x: datetime|str, format: str = '%d%b%Y:%H:%M:%S.%f') -> dict:
+def _pack_datetime(x: datetime|str|None, format: str = '%d%b%Y:%H:%M:%S.%f') -> dict|None:
     """
     Pack a datetime into the datetime format for the QuickBase API
     
     Parameters
     ----------
-    x
-        The value to pack. It should be a datetime object or a string
+    x : datetime | str | None
+        The value to pack
     format : str
         the format used to decode datetime strings, default '%d%b%Y:%H:%M:%S.%f'
+
     Returns
     -------
-    the packed value
+    dict | None : the packed value
+
+    Examples
+    --------
+    >>> import qbandas
+    >>> from datetime import datetime as dt
+    >>> qbandas.pack._pack_datetime('30Nov1974:14:56:08.967')
+    {'value': '1974-11-30T14:56:08Z'}
+    >>> qbandas.pack._pack_datetime(dt(day=10, month=5, year=1754, minute=24))
+    {'value': '1754-05-10T00:24:00Z'}
+    >>> qbandas.pack._pack_datetime('Friday, Nov 11, 2022 at 9:30 AM', format='%A, %b %d, %Y at %H:%M %p')
+    {'value': '2022-11-11T09:30:00Z'}
+    >>> qbandas.pack._pack_datetime(None) == None
+    True
+
     """
+    
     if pd.isna(x):
         return None
 
@@ -114,23 +159,33 @@ def _pack_datetime(x: datetime|str, format: str = '%d%b%Y:%H:%M:%S.%f') -> dict:
     
     return {'value':x.strftime('%Y-%m-%dT%H:%M:%SZ')}
 
-_pack_funcs["datetime"] = _pack_datetime
    
 
-def _pack_phonenum(x: None|str, format: str = "##########") -> dict:
+def _pack_phonenum(x: None|str, format: str = "##########") -> dict|None:
     """
     Pack a phone string into the phone format for the QuickBase API
     
     Parameters
     ----------
-    x
+    x : None | str
         The value to pack. It should be a string
     format : str
         the format string for reading the phone number. The phone number "(123) 456-7890 x123" would have the format string "(###) ###-#### x###". The extension must come last. It is optional for x to include it.
 
     Returns
     -------
-    the packed value
+    dict | None : the packed value
+
+    Examples
+    --------
+    >>> import qbandas
+    >>> qbandas.pack._pack_phonenum('9205551234')
+    {'value': '(920) 555-1234'}
+    >>> qbandas.pack._pack_phonenum('<920>888.1234x553', format = '<###>###.####x###')
+    {'value': '(920) 888-1234 x553'}
+    >>> qbandas.pack._pack_phonenum(None) == None
+    True
+
     """
     
     if pd.isna(x):
@@ -156,4 +211,11 @@ def _pack_phonenum(x: None|str, format: str = "##########") -> dict:
     #return "(123) 456-7890 x123"
     return {'value':t}
 
-_pack_funcs["phonenum"] = _pack_phonenum
+# a string to func mapping allowing the packing funcs to be assigned in data/field_types.json
+PACKING_FUNCS: dict[str, Callable[..., dict|None]] = {
+    'default': _pack_default,
+    'duration': _pack_duration,
+    'date': _pack_date,
+    'datetime': _pack_datetime,
+    'phonenum': _pack_phonenum,
+    }

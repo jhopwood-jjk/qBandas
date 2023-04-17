@@ -1,10 +1,15 @@
 """
 Methods that deal with resolving the structure of local and remote (QuickBase) tables.
 """
+import json
+import requests
+import os
+from os.path import join, exists
+from typing import NoReturn
 
-import json, requests, os
+from . import headers
 
-def pull_schema(DBID: str, **kwargs) -> None:
+def pull(DBID: str, **kwargs) -> NoReturn:
     """
     Download a local copy of a table's structure from a QuickBase application.
 
@@ -14,24 +19,21 @@ def pull_schema(DBID: str, **kwargs) -> None:
     ----------
     DBID : str
         The unique identifier of the table in QuickBase.
+
+    Examples
+    --------
+    >>> import qbandas
+    >>> # qbandas.schema.pull('bb7f543') # unauthorized
+
     """
     # Can set the directory with dir=<dir>
-    dir = kwargs['dir'] if 'dir' in kwargs else os.getcwd()
+    cwd = kwargs['dir'] if kwargs.get('dir') else os.getcwd()
 
-    # resolve the headers
-    with open(os.path.join(dir, 'headers.json'), 'r') as f:
-            headers = json.load(f)
+    headers_ = headers.read(dir=cwd)
 
     # send the request to quickbase
-    params = {
-        'tableId': DBID,
-        'includeFieldPerms': "false"
-    }
-    r = requests.get(
-        'https://api.quickbase.com/v1/fields', 
-        params = params, 
-        headers = headers
-    )
+    params = {'tableId': DBID, 'includeFieldPerms': "false"}
+    r = requests.get('https://api.quickbase.com/v1/fields', params = params, headers = headers_)
     r.raise_for_status()
 
     # convert the language in the api to user language
@@ -39,8 +41,8 @@ def pull_schema(DBID: str, **kwargs) -> None:
         "timestamp": "datetime",
         "recordid": "numeric",
         "email": "email-address",
-        "phone": "phone-number"
-    }
+        "phone": "phone-number",
+        }
 
     address_subfields = {
         ": Street 1": 1,
@@ -48,8 +50,8 @@ def pull_schema(DBID: str, **kwargs) -> None:
         ": City": 3,
         ": State": 4,
         ": Zip": 5,
-        ": Country": 6
-    }
+        ": Country": 6,
+        }
 
     # parse the schema from the response
     schema = dict()
@@ -60,27 +62,25 @@ def pull_schema(DBID: str, **kwargs) -> None:
         if field['label'] in ['Street 1', 'Street 2', 'City', 'State/Region', 'Postal Code', 'Country']:
             continue
 
-        _type = field['fieldType']
-        if _type in type_conversion:
-            _type = type_conversion[_type]
+        type_ = field['fieldType']
+        if type_ in type_conversion:
+            type_ = type_conversion[type_]
         
-        schema[field['label']] = {
-            'id': field['id'],
-            'type': _type
-        }
+        schema[field['label']] = {'id': field['id'], 'type': type_}
 
         # recreate subfields for adresses with propper names
-        if _type == 'address':
+        if type_ == 'address':
             for sufix, fid_offset in address_subfields.items():
                 schema[field['label'] + sufix] = {
                     'id': field['id'] + fid_offset,
                     'type': "text"
                 }
 
-    # dump the schmea to disk
-    if not os.path.exists(os.path.join(dir, 'schemas')):
-        os.makedirs(os.path.join(dir, 'schemas'))
-    with open(os.path.join(dir, 'schemas', DBID + '.json'), 'w+') as f:
+    # dump the schema to disk
+    schemas_dir = join(cwd, 'schemas')
+    if not exists(schemas_dir):
+        os.makedirs(schemas_dir)
+    with open(join(schemas_dir, DBID + '.json'), 'w') as f:
         json.dump(schema, f, indent=4)
     
         
@@ -119,7 +119,7 @@ def add_args(schema_name: str, *args, **kwargs):
             schema[field]['args'] = schema[field]['args'] | kwargs
 
     # put the schema pack into the file
-    with open(os.path.join(dir, 'schemas', file_name), 'w') as f:
+    with open(join(dir, 'schemas', file_name), 'w') as f:
         json.dump(schema, f, indent=4)
 
 def set_args(schema_name: str, *args, **kwargs):

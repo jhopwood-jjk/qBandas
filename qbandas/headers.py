@@ -12,9 +12,9 @@ DEFAULT_AUTH = '<QB-USER-TOKEN xxxxxx_xxx_x_xxxxxxxxxxxxxxxxxxxxxxxxxx>'
 
 def create(interactive: bool = False, repair: bool = False, *, host: str = DEFAULT_HOST, user: str = DEFAULT_USER, auth: str = DEFAULT_AUTH, **kwargs) -> None:
     '''
-    TODO investigate unit test failures 
-
     Create a header file if there isn't one
+
+    If this function does not create or repair a header file, it does nothing.
 
     Parameters
     ----------
@@ -98,8 +98,6 @@ def exists(**kwargs) -> bool:
 
 def valid(*, warn_: bool = False, **kwargs) -> bool:
     '''
-    TODO test this 
-
     Check if the header file in the current working directory is valid
 
     If a header file is valid, you will be able to make requests to the QuickBase API; however, these requests are not guaranteed to be authorized. If a header file doesn't exist, it is automaically invalid. 
@@ -147,3 +145,29 @@ def valid(*, warn_: bool = False, **kwargs) -> bool:
         return False
 
     return True
+
+
+def read(**kwargs) -> dict[str, str]:
+    '''
+    Return the headers specified in the header file
+
+    Parameters
+    ----------
+    **kwargs
+        key word arguments
+
+    Returns
+    -------
+    dict[str, str] : the headers in headers.json
+    '''
+
+    cwd = os.getcwd() if not kwargs.get('dir') else kwargs['dir']
+
+    if not exists(dir=cwd):
+        raise FileNotFoundError(f'No header file found in {cwd}')
+    
+    if not valid(dir=cwd):
+        raise ValueError(f'header file in {cwd} is invalid')
+    
+    with open(join(cwd, HEADER_FILE_NAME)) as f:
+        return json.load(f)
