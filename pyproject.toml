@@ -1,10 +1,14 @@
 [build-system]
-requires = ["hatchling", "pandas"]
+requires = [
+  "hatchling", 
+  "pandas==1.4.3",
+  "requests==2.28.1"
+  ]
 build-backend = "hatchling.build"
 
 [project]
 name = "qbandas"
-version = "1.0.3"
+version = "1.0.4"
 authors = [
   { name="Joshua Hopwood" },
 ]
@@ -19,6 +23,3 @@ classifiers = [
 
 [project.urls]
 "Homepage" = "https://github.com/jhopwood-jjk/qBandas"
-
-[pytest]
-testpaths = "test"

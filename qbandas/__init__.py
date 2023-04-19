@@ -1,23 +1,25 @@
 """
-Integrates the popular data handling library Pandas and the QuickBase API.
+Integrates the popular data handling library Pandas and the QuickBase 
+API.
 """
 
 __all__ = [ 
     'headers',
     'schema',
+    'upload',
+    'util',
     ]
-
-from . import headers
-from . import schema
 
 # scoped setup functions to avoid cluttering qbandas package 
 def setup1():
     '''
-    Create field types dict by reading in ./data/field_types.json and resolving the packing functions
+    Create field types dict by reading in ./data/field_types.json and 
+    resolving the packing functions
     '''
 
     import json
     from os.path import dirname, join, realpath
+
     from .pack import PACKING_FUNCS
 
     # field_types is the raw json to dict
@@ -33,4 +35,4 @@ def setup1():
     return field_types
 FIELD_TYPES = setup1()
 
-
+from . import headers, schema, upload

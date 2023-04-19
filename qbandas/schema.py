@@ -2,23 +2,30 @@
 Methods that deal with resolving the structure of local and remote (QuickBase) tables.
 """
 import json
-import requests
 import os
-from os.path import join, exists
+from os.path import exists, join
+from pathlib import Path
 from typing import NoReturn
+
+import requests
 
 from . import headers
 
-def pull(DBID: str, **kwargs) -> NoReturn:
-    """
-    Download a local copy of a table's structure from a QuickBase application.
 
-    This operation is authorized by `./headers.json`. The schema will be placed into `./schemas/` where other qBandas operations can use it. 
+def pull(DBID: str, directory: Path|str = None, **kwargs) -> NoReturn:
+    """
+    Download a local copy of a table's structure from a QuickBase 
+    application.
+
+    This operation is authorized by `./headers.json`. The schema will be
+    placed into `./schemas/` where other qBandas operations can use it. 
 
     Parameters
     ----------
     DBID : str
         The unique identifier of the table in QuickBase.
+    directory : None | Path | str
+        The directory to use for this operation. Default is current
 
     Examples
     --------
@@ -26,10 +33,11 @@ def pull(DBID: str, **kwargs) -> NoReturn:
     >>> # qbandas.schema.pull('bb7f543') # unauthorized
 
     """
-    # Can set the directory with dir=<dir>
-    cwd = kwargs['dir'] if kwargs.get('dir') else os.getcwd()
+    directory = directory if directory else os.getcwd()  
+    if not os.path.isdir(directory):
+        raise FileNotFoundError(f'{directory = } is not a valid directory')
 
-    headers_ = headers.read(dir=cwd)
+    headers_ = headers.read(directory = directory)
 
     # send the request to quickbase
     params = {'tableId': DBID, 'includeFieldPerms': "false"}
@@ -77,14 +85,14 @@ def pull(DBID: str, **kwargs) -> NoReturn:
                 }
 
     # dump the schema to disk
-    schemas_dir = join(cwd, 'schemas')
+    schemas_dir = join(directory, 'schemas')
     if not exists(schemas_dir):
         os.makedirs(schemas_dir)
     with open(join(schemas_dir, DBID + '.json'), 'w') as f:
         json.dump(schema, f, indent=4)
     
         
-def add_args(schema_name: str, *args, **kwargs):
+def add_args(schema_name: str, directory: Path|str = None, *args, **kwargs):
     """
     Append new config options (args) for fields in a schema.
 
@@ -92,21 +100,22 @@ def add_args(schema_name: str, *args, **kwargs):
     ----------
     schema_name : str
         The schema to modify.
+    directory : None | Path | str
+        The directory to use for this operation. Default is current
     *args
         These fields will be configured.
     **kwargs
         The arguments to add.
+        
     """
 
-    # Can set the directory with dir=<dir>
-    dir = os.getcwd()
-    if 'dir' in kwargs:
-        dir = kwargs['dir']
-        del kwargs['dir']
+    directory = directory if directory else os.getcwd()  
+    if not os.path.isdir(directory):
+        raise FileNotFoundError(f'{directory = } is not a valid directory')
 
     # read in the schema
     file_name = schema_name + '.json'
-    with open(os.path.join(dir, 'schemas', file_name), 'r') as f:
+    with open(os.path.join(directory, 'schemas', file_name), 'r') as f:
         schema = json.load(f)
 
     # append the new arguments
@@ -119,10 +128,10 @@ def add_args(schema_name: str, *args, **kwargs):
             schema[field]['args'] = schema[field]['args'] | kwargs
 
     # put the schema pack into the file
-    with open(join(dir, 'schemas', file_name), 'w') as f:
+    with open(join(directory, 'schemas', file_name), 'w') as f:
         json.dump(schema, f, indent=4)
 
-def set_args(schema_name: str, *args, **kwargs):
+def set_args(schema_name: str, directory: Path|str = None, *args, **kwargs):
     """
     Set the config options (args) for fields in a schema.
 
@@ -130,21 +139,21 @@ def set_args(schema_name: str, *args, **kwargs):
     ----------
     schema_name : str
         The schema to modify.
+    directory : None | Path | str
+        The directory to use for this operation. Default is current
     *args
         These fields will be configured.
     **kwargs
         The arguments to add.
     """
 
-    # Can set the directory with dir=<dir>
-    dir = os.getcwd()
-    if 'dir' in kwargs:
-        dir = kwargs['dir']
-        del kwargs['dir']
-
+    directory = directory if directory else os.getcwd()  
+    if not os.path.isdir(directory):
+        raise FileNotFoundError(f'{directory = } is not a valid directory')
+    
     # read in the schema
     file_name = schema_name + '.json'
-    with open(os.path.join(dir, 'schemas', file_name), 'r') as f:
+    with open(os.path.join(directory, 'schemas', file_name), 'r') as f:
         schema = json.load(f)
 
     # set the arguments
@@ -154,5 +163,5 @@ def set_args(schema_name: str, *args, **kwargs):
         schema[field]['args'] = kwargs
 
     # put the schema pack into the file
-    with open(os.path.join(dir, 'schemas', file_name), 'w') as f:
+    with open(os.path.join(directory, 'schemas', file_name), 'w') as f:
         json.dump(schema, f, indent=4)

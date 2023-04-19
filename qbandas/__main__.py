@@ -3,8 +3,8 @@ Run all tests for this package
 """
 
 import os
-from os.path import realpath, dirname, join, exists
 from doctest import DocFileSuite
+from os.path import dirname, exists, join, realpath
 from unittest import TestLoader, TextTestRunner
 
 this_dir = dirname(realpath(__file__))
@@ -22,5 +22,6 @@ runner.run(suite)
 
 # clean up any leftover files from doc tests
 from .headers import HEADER_FILE_NAME
+
 if exists(HEADER_FILE_NAME):
     os.remove(HEADER_FILE_NAME)

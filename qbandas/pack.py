@@ -3,7 +3,7 @@ Functions for converting data from Python's representation to QuickBase's repres
 """
 
 from datetime import datetime
-from typing import Callable, Any
+from typing import Any, Callable
 
 import pandas as pd
 
@@ -44,7 +44,8 @@ def _pack_duration(x: float|int|str|None, unit: str = 'seconds') -> dict|None:
     x : float | int | str | None
         The value to pack.
     unit : str
-        the duration unit 'seconds' or 'milliseconds'. Defaults to 'seconds'
+        the duration unit 'seconds' or 'milliseconds'. Defaults to 
+        'seconds'
 
     Returns
     -------
@@ -128,7 +129,8 @@ def _pack_datetime(x: datetime|str|None, format: str = '%d%b%Y:%H:%M:%S.%f') -> 
     x : datetime | str | None
         The value to pack
     format : str
-        the format used to decode datetime strings, default '%d%b%Y:%H:%M:%S.%f'
+        the format used to decode datetime strings, default 
+        '%d%b%Y:%H:%M:%S.%f'
 
     Returns
     -------
@@ -170,7 +172,10 @@ def _pack_phonenum(x: None|str, format: str = "##########") -> dict|None:
     x : None | str
         The value to pack. It should be a string
     format : str
-        the format string for reading the phone number. The phone number "(123) 456-7890 x123" would have the format string "(###) ###-#### x###". The extension must come last. It is optional for x to include it.
+        the format string for reading the phone number. The phone number 
+        "(123) 456-7890 x123" would have the format string 
+        "(###) ###-#### x###". The extension must come last. It is 
+        optional for x to include it.
 
     Returns
     -------
