@@ -16,7 +16,7 @@ import requests
 from . import FIELD_TYPES, headers
 
 
-def records(df: pd.DataFrame, table_name: str, directory: Path|str = None,
+def upload(df: pd.DataFrame, table_name: str, directory: Path|str = None,
             **kwargs) -> NoReturn: 
     """
     Send a table of records (rows) to a table on QuickBase.
@@ -126,4 +126,73 @@ def records(df: pd.DataFrame, table_name: str, directory: Path|str = None,
         if debug:
             print(str_resp(r))
         r.raise_for_status()
+        
     
+    def fetch(table_name: str, *args, where: str = None, order: list = None, 
+              group_by: list = None, skip: int = 0, limit: int = None, 
+              directory: Path|str = None, **kwargs) -> pd.DataFrame:
+        '''
+        Fetch a table of records from a QuickBase app
+
+        Retrieves records from QuickBase. Authorized by `headers.json`.
+
+        Parameters
+        ----------
+        table_name : str
+            The table to pull from
+        where : str, optional
+            Should be written like an SQL statement, by default None
+        order : list, optional
+            The order in which to sort the returned records. Each entry 
+            in this list is a tuple with the first element being the 
+            column name, and the second is the word 'asc' or 'desc'. 
+            by default None
+        group_by : list, optional
+            How to group records, by default None
+        skip : int, optional
+            Number of records to skip off the top off the returned 
+            dataframe, by default 0
+        limit : int, optional
+            Maximum number of records that can be returned. None is no
+            limit, by default None
+        directory : Path | str, optional
+            The directory for this operation, by default current
+        *args
+            The columns to select
+        **kwargs
+            Unused
+
+        Returns
+        -------
+        pd.DataFrame
+            The records from QuickBase. 
+        
+        '''
+        
+        directory = directory if directory else os.getcwd()  
+        if not os.path.isdir(directory):
+            raise FileNotFoundError(f'{directory = } is not a valid directory')
+        
+        # read in headers and schema
+        headers_ = headers.read(directory = directory)
+        with open(join(directory, 'schemas', f'{table_name}.json'), 'r') as f:
+            schema = json.load(f)
+        
+        
+        import json
+
+        import requests
+
+        headers = {
+            'QB-Realm-Hostname': '{QB-Realm-Hostname}',
+            'User-Agent': '{User-Agent}',
+            'Authorization': '{Authorization}'
+        }
+        
+        r = requests.post(
+        'https://api.quickbase.com/v1/records/query', 
+        headers = headers, 
+        json = body
+        )
+
+        print(json.dumps(r.json(),indent=4))

@@ -35,4 +35,4 @@ def setup1():
     return field_types
 FIELD_TYPES = setup1()
 
-from . import headers, schema, upload
+from . import headers, records, schema

@@ -1,4 +1,5 @@
-__pycache__
-dist/*
-notes.md
-headers.json
+__pycache__/
+dist/
+schemas/
+venv/
+dev/

@@ -16,7 +16,7 @@ DEFAULT_AUTH = '<QB-USER-TOKEN xxxxxx_xxx_x_xxxxxxxxxxxxxxxxxxxxxxxxxx>'
 def create(interactive: bool = False, repair: bool = False, *, 
            host: str = DEFAULT_HOST, user: str = DEFAULT_USER, 
            auth: str = DEFAULT_AUTH, directory: Path|str = None,
-           **kwargs) -> NoReturn:
+           **kwargs) -> None:
     '''
     Create a header file if there isn't one
 
@@ -162,12 +162,12 @@ def valid(*, directory: Path|str = None, warn_: bool = False, **kwargs) -> bool:
         return False
 
     # check hostname
-    if not re.match(r'^[a-zA-Z]+\.quickbase\.com$', contents["QB-Realm-Hostname"]):
+    if not re.match(r'^[\w\-]+\.quickbase\.com$',contents["QB-Realm-Hostname"]):
         if warn_: warn(f'header file: {header_path} has invalid hostname')
         return False
     
     # check authorization
-    if not re.match(r'^QB-(USER|TEMP)-TOKEN \w{6}_\w{3}_\w_\w{26}$', contents["Authorization"]):
+    if not re.match(r'^QB-(USER|TEMP)-TOKEN \w{6}_\w{2,5}_\w_\w{20,30}$', contents["Authorization"]):
         if warn_: warn(f'header file: {header_path} has invalid authorization')
         return False
 
@@ -197,7 +197,7 @@ def read(directory: Path|str = None, **kwargs) -> dict[str, str]:
     if not exists(directory = directory):
         raise FileNotFoundError(f'No header file found in {directory}')
     
-    if not valid(directory = directory):
+    if not valid(directory = directory, warn_=True):
         raise ValueError(f'header file in {directory} is invalid')
     
     with open(join(directory, HEADER_FILE_NAME)) as f:

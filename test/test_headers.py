@@ -1,8 +1,9 @@
-import unittest
 import os
+import unittest
 from os.path import exists
 
-from . import headers
+from qbandas import headers
+
 
 class TestHeaders(unittest.TestCase):
 
