@@ -5,6 +5,7 @@ application.
 
 import json
 import os
+from datetime import datetime as dt
 from functools import partial
 from os.path import join
 from pathlib import Path
@@ -127,72 +128,104 @@ def upload(df: pd.DataFrame, table_name: str, directory: Path|str = None,
             print(str_resp(r))
         r.raise_for_status()
         
+
+def fetch(table_name: str, *columns, where: str = None, order: list = None, 
+            group_by: list = None, skip: int = 0, limit: int = None, 
+            directory: Path|str = None, **kwargs) -> pd.DataFrame:
+    '''
+    Fetch a table of records from a QuickBase app
+
+    Retrieves records from QuickBase. Authorized by `headers.json`.
+
+    Parameters
+    ----------
+    table_name : str
+        The table to pull from
+    where : str, optional
+        Should be written like an SQL statement, by default None
+    order : list, optional
+        The order in which to sort the returned records. Each entry 
+        in this list is a tuple with the first element being the 
+        column name, and the second is the word 'asc' or 'desc'. 
+        by default None
+    group_by : list, optional
+        How to group records, by default None
+    skip : int, optional
+        Number of records to skip off the top off the returned 
+        dataframe, by default 0
+    limit : int, optional
+        Maximum number of records that can be returned. None is no
+        limit, by default None
+    directory : Path | str, optional
+        The directory for this operation, by default current
+    *columns
+        The columns to select
+    **kwargs
+        Unused
+
+    Returns
+    -------
+    pd.DataFrame
+        The records from QuickBase. 
     
-    def fetch(table_name: str, *args, where: str = None, order: list = None, 
-              group_by: list = None, skip: int = 0, limit: int = None, 
-              directory: Path|str = None, **kwargs) -> pd.DataFrame:
-        '''
-        Fetch a table of records from a QuickBase app
-
-        Retrieves records from QuickBase. Authorized by `headers.json`.
-
-        Parameters
-        ----------
-        table_name : str
-            The table to pull from
-        where : str, optional
-            Should be written like an SQL statement, by default None
-        order : list, optional
-            The order in which to sort the returned records. Each entry 
-            in this list is a tuple with the first element being the 
-            column name, and the second is the word 'asc' or 'desc'. 
-            by default None
-        group_by : list, optional
-            How to group records, by default None
-        skip : int, optional
-            Number of records to skip off the top off the returned 
-            dataframe, by default 0
-        limit : int, optional
-            Maximum number of records that can be returned. None is no
-            limit, by default None
-        directory : Path | str, optional
-            The directory for this operation, by default current
-        *args
-            The columns to select
-        **kwargs
-            Unused
-
-        Returns
-        -------
-        pd.DataFrame
-            The records from QuickBase. 
+    '''
+    
+    directory = directory if directory else os.getcwd()  
+    if not os.path.isdir(directory):
+        raise FileNotFoundError(f'{directory = } is not a valid directory')
+    
+    # read in headers and schema
+    headers_ = headers.read(directory = directory)
+    with open(join(directory, 'schemas', f'{table_name}.json'), 'r') as f:
+        schema = json.load(f) # for resolving column names
         
-        '''
-        
-        directory = directory if directory else os.getcwd()  
-        if not os.path.isdir(directory):
-            raise FileNotFoundError(f'{directory = } is not a valid directory')
-        
-        # read in headers and schema
-        headers_ = headers.read(directory = directory)
-        with open(join(directory, 'schemas', f'{table_name}.json'), 'r') as f:
-            schema = json.load(f)
-        
-        
-        import json
-
-        import requests
-
-        headers = {
-            'QB-Realm-Hostname': '{QB-Realm-Hostname}',
-            'User-Agent': '{User-Agent}',
-            'Authorization': '{Authorization}'
+    body = {
+        'from': table_name,
+        'select': [schema[c]['id'] for c in columns],
+        "options": {
+            "skip": skip if skip else 0,
+            "top": limit if limit else -1,
+            "compareWithAppLocalTime": False
         }
+    }
+    
+    # are we sorting?
+    if order:
+        order = list(order)
+        for i, item in enumerate(order.copy()):
+            name, ord = item
+            order[i] = {"fieldId": schema[name]['id'], 'order': ord.upper()}
+        body['sortBy'] = order
         
-        r = requests.post(
-        'https://api.quickbase.com/v1/records/query', 
-        headers = headers, 
-        json = body
-        )
-
-        print(json.dumps(r.json(),indent=4))
+    # are we grouping?
+    if group_by:
+        body["groupBy"] = [{"fieldId": 6, "grouping": "equal-values"}]
+        raise NotImplementedError('No grouping just yet!')
+    
+    # are we filtering?
+    if where:
+        body['where'] = '{fid.op.\'value\'}'
+        raise NotImplementedError('No filtering just yet!')
+    
+    # send request
+    r = requests.post('https://api.quickbase.com/v1/records/query', 
+        headers = headers_, json = body)
+    r.raise_for_status()
+    
+    # unravel response
+    data = r.json()['data']
+    fields = r.json()['fields']
+    name_map = {str(x['id']): x['label'] for x in fields}
+    type_map = {str(x['id']): x['type'] for x in fields}
+    
+    # assemble dataframe
+    for i, record in enumerate(data.copy()):
+        data[i] = {k: v['value'] for k, v in record.items()}
+    df = pd.DataFrame(data)
+    # data typing... builtins didn't work for me
+    for id, type_ in type_map.items():
+        if type_ in ['timestamp', 'date']:
+            df[id] = pd.to_datetime(df[id])
+    df.rename(columns = name_map, inplace = True)
+    
+    return df

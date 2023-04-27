@@ -8,7 +8,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "qbandas"
-version = "1.0.4"
+version = "1.1.0"
 authors = [
   { name="Joshua Hopwood" },
 ]
