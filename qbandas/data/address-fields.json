@@ -1,0 +1,18 @@
+{
+    "junk-names": [
+        "Street 1", 
+        "Street 2", 
+        "City", 
+        "State/Region", 
+        "Postal Code", 
+        "Country"
+    ],
+    "suffixes": {
+        ": Street 1": 1,
+        ": Street 2": 2,
+        ": City": 3,
+        ": State/Region": 4,
+        ": Postal Code": 5,
+        ": Country": 6
+    }
+}

@@ -1,18 +1,18 @@
 [build-system]
-requires = [
-  "hatchling", 
-  "pandas==1.4.3",
-  "requests==2.28.1"
-  ]
+requires = [ "hatchling" ]
 build-backend = "hatchling.build"
 
 [project]
 name = "qbandas"
-version = "1.1.0"
+version = "1.2.0"
 authors = [
-  { name="Joshua Hopwood" },
+  { name = "Joshua Hopwood" },
 ]
 description = "Integrates the popular data handling library Pandas and the QuickBase API"
+dependencies = [
+  "pandas==1.4.3",
+  "requests==2.28.1"
+]
 readme = "README.md"
 requires-python = ">=3.7"
 classifiers = [
@@ -22,4 +22,6 @@ classifiers = [
 ]
 
 [project.urls]
-"Homepage" = "https://github.com/jhopwood-jjk/qBandas"
+homepage = "https://pypi.org/project/qbandas/"
+repository = "https://github.com/jhopwood-jjk/qBandas"
+documentation = "https://jhopwood-jjk.github.io/qbandas/index.html"

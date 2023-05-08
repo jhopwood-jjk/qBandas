@@ -1,0 +1,1 @@
+python -m pdoc --force --html --config show_source_code=False --output-dir jhopwood-jjk.github.io qbandas

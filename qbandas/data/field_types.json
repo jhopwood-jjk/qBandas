@@ -1,122 +1,122 @@
 {
     "text": {
         "desc": "text",
-        "pack": "default"
+        "packing-function": "_pack_default"
     },
 
     "rich-text": {
         "desc": "html text",
-        "pack": "default"
+        "packing-function": "_pack_default"
     },
 
     "multi-line-text": {
         "desc": "text with support for newlines (\\n)",
-        "pack": "default"
+        "packing-function": "_pack_default"
     },  
 
     "multiple-choice-text": {
         "desc": "text indicating selected option", 
-        "pack": "default"
+        "packing-function": "_pack_default"
     },
 
     "multi-select": {
         "desc": "list of strings", 
-        "pack": null
+        "packing-function": null
     },
 
     "address": {
         "desc": "composite field. there must be six columns in your datatframe for each address field on quickbase. street 1, street 2, city, state, zip, country",
-        "pack": "default"
+        "packing-function": "_pack_default"
     }, 
 
-    "email-address": {
+    "email": {
         "desc": "valid email adresses as strings", 
-        "pack": "default"
+        "packing-function": "_pack_default"
     },
 
     "url": {
         "desc": "string of a url", 
-        "pack": "default"
+        "packing-function": "_pack_default"
     },
 
     "numeric": {
         "desc": "int or float data", 
-        "pack": "default"
+        "packing-function": "_pack_default"
     },
 
     "numeric-percent": {
         "desc": "supports floats from zero to one inclusive",
-        "pack": "default"
+        "packing-function": "_pack_default"
     }, 
 
     "numeric-rating": {
         "desc": "integer from one to five", 
-        "pack": "default"
+        "packing-function": "_pack_default"
     }, 
 
     "numeric-currency": {
         "desc": "float indicating currency", 
-        "pack": "default"
+        "packing-function": "_pack_default"
     },
 
     "duration": {
         "desc": "durration in milliseconds", 
-        "pack": "duration"
+        "packing-function": "_pack_duration"
     }, 
 
     "date": {
         "desc": "date as a string or Datetime object. must specify date format as an argument eg. \"Y-D-M\" eg. \"2019-12-18\".", 
-        "pack": "date"
+        "packing-function": "_pack_date"
     },
 
-    "datetime": {
+    "timestamp": {
         "desc": "datetime as a string or a Datetime object. must specify datetime format as an argument eg. \"Y-D-M H:m:s\" 'YYYY-MM-DDThh:mm:ssZ'", 
-        "pack": "datetime"
+        "packing-function": "_pack_datetime"
     },
 
     "time-of-day": {
         "desc": "military time as a string. must specify time-of-day format eg. \"hh:mm:ss.sss\" military time hh:mm:ss.sss", 
-        "pack": null
+        "packing-function": null
     },
 
     "checkbox": {
         "desc": "boolean as a int, string or bool. not case sensitve. false, 'no', 'n', 'f', 'false', 0 are all false, everything else is true except None", 
-        "pack": "default"
+        "packing-function": "_pack_default"
     }, 
 
-    "phone-number": {
+    "phone": {
         "desc": "phone number as a string. must specify phone-number format eg. \"(###) ###-#### x####\" pound signs indicate digits. the first 10 digits are required, extension is optional.\"(123) 456-7890 x123\"", 
-        "pack": "phonenum"
+        "packing-function": "_pack_phonenum"
     },
 
     "user": {
         "desc": "dictionary containing the user data that must include the user's ID eg. { \"id\": \"123456.ab1s\" }", 
-        "pack": null
+        "packing-function": null
     },
 
     "list-user": {
         "desc": "a list of user dicts", 
-        "pack": null
+        "packing-function": null
     }, 
 
     "file-attachment": {
         "desc": "Not supported", 
-        "pack": null
+        "packing-function": null
     },
 
-    "record-id": {
-        "desc": "int. default merge field", 
-        "pack": "default"
+    "recordid": {
+        "desc": "int. _pack_default merge field", 
+        "packing-function": "_pack_default"
     },
 
     "lookup": {
         "desc": "Not supported", 
-        "pack": null
+        "packing-function": null
     },
 
     "summary": {
         "desc": "Not supported", 
-        "pack": null
+        "packing-function": null
     } 
 
 }

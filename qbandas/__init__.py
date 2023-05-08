@@ -1,38 +1,44 @@
-"""
+'''
 Integrates the popular data handling library Pandas and the QuickBase 
 API.
-"""
+'''
 
-__all__ = [ 
-    'headers',
-    'schema',
-    'upload',
-    'util',
-    ]
-
-# scoped setup functions to avoid cluttering qbandas package 
-def setup1():
+def _setup():
     '''
-    Create field types dict by reading in ./data/field_types.json and 
-    resolving the packing functions
+    Onetime setup function for qBandas on import
+
+    Do not run this. For interal use only
     '''
-
-    import json
-    from os.path import dirname, join, realpath
-
-    from .pack import PACKING_FUNCS
-
-    # field_types is the raw json to dict
-    here = dirname(realpath(__file__))
-    with open(join(here, 'data', 'field_types.json')) as f:
-        field_types = json.load(f)
-
-    # resolve the packing functions
-    for t in field_types:
-        if field_types[t]["pack"]:
-            field_types[t]["pack"] = PACKING_FUNCS[field_types[t]["pack"]]
     
-    return field_types
-FIELD_TYPES = setup1()
+    import configparser
+    import os
+    import os.path as op
+    
+    global QB_PATH, USER_PATH, MAX_BATCH_RECORDS, TIMEZONE_OFFSET
+    
+    # field_types is the raw json to dict
+    QB_PATH = op.dirname(op.realpath(__file__))
+    
+    config = configparser.ConfigParser()
+    config.read(op.join(QB_PATH, 'data', 'config.ini'))
+        
+    USER_PATH = op.expanduser(op.join(config['general']['base_dir'], 
+                                    config['general']['qbandas_dir']))
+    
+    MAX_BATCH_RECORDS = config['records']['max_batch']
+    TIMEZONE_OFFSET = int(config['timezone']['offset'])
+    
+    try: os.makedirs(op.join(USER_PATH, 'profiles'))
+    except FileExistsError: pass
+        
+    try: os.makedirs(op.join(USER_PATH, 'schemas'))
+    except FileExistsError: pass
+        
+_setup()
+del _setup
 
-from . import headers, records, schema
+from .profiles import (_del_profile, _get_headers, _get_profile_path,
+                       is_valid_profile, list_profiles, set_profile)
+from .records import fetch_records, upload_records
+from .schemas import (_read_schema, _write_schema, add_schema_args,
+                      fetch_schema, list_schemas, set_schema_args)
