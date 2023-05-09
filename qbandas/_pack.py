@@ -1,6 +1,6 @@
 '''
 Functions for converting data from Python's representation to 
-QuickBase's representation.
+QuickBase's representation
 '''
 
 import datetime as dt
@@ -10,7 +10,7 @@ from typing import Any
 import pandas as pd
 
 
-def _pack_default(x: Any) -> dict|None:
+def _pack_default(x: Any) -> dict[str, Any] | None:
     '''
     Pack a value into the default QuickBase API format.
 
@@ -21,14 +21,15 @@ def _pack_default(x: Any) -> dict|None:
 
     Returns
     -------
-    dict | None : the packed value
+    dict[str, Any] | None 
+        the packed value
 
     Examples
     --------
-    >>> import qbandas
-    >>> qbandas.pack._pack_default('Object')
+    >>> import qbandas._pack as pack
+    >>> pack._pack_default('Object')
     {'value': 'Object'}
-    >>> qbandas.pack._pack_default(None) == None
+    >>> pack._pack_default(None) == None
     True
 
     '''

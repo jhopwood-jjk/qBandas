@@ -1,24 +1,18 @@
+'''
+Functions that deal with sending records or information to a Quickbase 
+application.
+'''
+
 import asyncio
 import datetime as dt
-import json
-import os.path as op
 from functools import partial
 
 import pandas as pd
 import requests
 
-from .. import MAX_BATCH_RECORDS, QB_PATH, TIMEZONE_OFFSET
-from ..profiles import _get_headers, is_valid_profile
-from ..schemas import _read_schema
-from . import _pack
-
-with open(op.join(QB_PATH, 'data', 'field_types.json')) as f:
-    FIELD_TYPES = json.load(f)
-    
-# resolve the packing functions
-for _, cnfg in FIELD_TYPES.items():
-    if cnfg["packing-function"]:
-        cnfg["packing-function"] = getattr(_pack, cnfg["packing-function"])
+from ._constants import FIELD_TYPES, MAX_BATCH_RECORDS, TIMEZONE_OFFSET
+from .profiles import _get_headers, is_valid_profile
+from .schemas import _read_schema
 
 
 def upload_records(df: pd.DataFrame, table_name: str, profile: str,

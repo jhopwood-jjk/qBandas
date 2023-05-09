@@ -1,9 +1,19 @@
+'''
+Manage qbandas profiles
+
+Profiles control the authorization of all qbandas requests. Each profile
+contains some set of QuickBase API headers.
+'''
+
 import json
 import os
 import os.path as op
 import re
 
-from .. import USER_PATH
+from ._constants import USER_PATH
+
+try: os.makedirs(op.join(USER_PATH, 'profiles'))
+except FileExistsError: pass
 
 
 def set_profile(profile: str, *, host: str = None, user: str = None, 

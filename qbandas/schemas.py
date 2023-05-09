@@ -1,3 +1,11 @@
+'''
+Methods that deal with handling local copies of QuickBase tables' 
+schemas.
+
+Everytime you want to upload records to a table on QuickBase, you must
+have a valid schema for the table. 
+'''
+
 import json
 import os
 import os.path as op
@@ -5,9 +13,12 @@ import re
 
 import requests
 
-from .. import QB_PATH, USER_PATH
-from ..profiles import _get_headers, is_valid_profile
+from ._constants import QB_PATH, USER_PATH
+from .profiles import _get_headers, is_valid_profile
 
+try: os.makedirs(op.join(USER_PATH, 'schemas'))
+except FileExistsError: pass
+        
 
 def fetch_schema(dbid: str, profile: str, table_name: str = None):
     """
