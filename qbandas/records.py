@@ -25,6 +25,10 @@ def upload_records(df: pd.DataFrame, table_name: str, profile: str,
     that only _some_ of your records will have been uploaded to 
     QuickBase. If that is an issue, please fix the data, and send it 
     all again.
+    
+    Using this method without specifying `-O` to the python interpreter 
+    will print debug info. It can be useful for seeing if the data is 
+    being uploaded correctly.  
 
     Parameters
     ----------
@@ -32,13 +36,18 @@ def upload_records(df: pd.DataFrame, table_name: str, profile: str,
         The table of records
     table_name : str
         Identifies which table to send the data to. You should use 
-        `pull_schema()` to create a valid `table_name`.
+        `fetch_schema()` to create a `table_name`.
     profile : str
         The profile to authorize this request
     drop : bool, optional
-        Toggle dropping extra columns. If False, all columns must match, by deafult False
+        Toggle dropping extra columns. If False, all columns must match, 
+        by deafult False
     '''
 
+    # for developers looking to work on this function, it's a lot of 
+    # code, but it's all sequential. Each peice feeds right into the
+    # next. 
+    
     if __debug__: 
         from pprint import pp
         print(df.head())
@@ -130,23 +139,33 @@ def upload_records(df: pd.DataFrame, table_name: str, profile: str,
         
     asyncio.run(_upload_all())
 
-def fetch_records(table_name: str, profile: str, *, columns: list[str] = None, 
-                  where: str = None, order: list = None, 
-                  group_by: list = None, skip: int = 0, 
-                  limit: int = None) -> pd.DataFrame:
+def fetch_records(table_name: str, profile: str, *columns_, 
+                  columns: list[str] = None, where: str = None, 
+                  order: list = None, group_by: list = None,
+                  skip: int = 0, limit: int = None) -> pd.DataFrame:
     '''
     Fetch a table of records from a QuickBase app
+    
+    This method emulates the functionality of a SQL statement. 
 
-    Retrieves records from QuickBase
+    More information about fetching 
+    records through the QuickBase API can be found 
+    [here](https://developer.quickbase.com/operation/runQuery).
+    
+    Using this method without specifying `-O` to the python interpreter 
+    will print debug info. It can be useful for seeing if the data is 
+    being fetched correctly.  
 
     Parameters
     ----------
     table_name : str
-        The table to pull from
+        The table to pull records from
     profile : str
         The name of the profile to authorize this request
     columns : list[str], optional
         The columns to select, by default None
+    *columns_ : list[str], optional
+        More columns to select, by default list()
     where : str, optional
         Should be written like an SQL statement, by default None
     order : list, optional

@@ -2,7 +2,8 @@
 Manage qbandas profiles
 
 Profiles control the authorization of all qbandas requests. Each profile
-contains some set of QuickBase API headers.
+contains some set of QuickBase API headers that can be configured using 
+qbandas.set_profile().
 '''
 
 import json
@@ -24,34 +25,33 @@ def set_profile(profile: str, *, host: str = None, user: str = None,
 
     If no profile exists with the name `profile`, a new profile will be created. Unspecified arguments will not override existing profile 
     information.
+    
+    More information about QuickBase API headers can be found 
+    [here](https://developer.quickbase.com/headers), and more 
+    information about QuickBase API tokens can be found 
+    [here](https://developer.quickbase.com/auth).
 
     Parameters
     ----------
-    name : str
-        The name of the profile to configure
+    profile : str
+        The name of the profile to configure. You will use this name to 
+        reference this profile in all future calls.
     host : str, optional
-        The QuickBase realm hostname, by default None
+        The QuickBase realm hostname. You only need the first part of 
+        the host. For example, you would just need 'demo' from 
+        'demo.quickbase.com', by default None
     user : str, optional
-        The name of the user agent, by default None
+        The name of the user agent. If not supplied, use `auto_user` to
+        fill this in for you, by default None
     auth : str, optional
-        The QuickBase API token, by default None
+        The QuickBase API token. Just the token, you don't need the TEMP
+        or USER specifier, by default None
     temp_token : bool, optional
         Specify if the API token is temporary, by default False
     auto_user : bool, optional
         Specify if this profile should automatically populate the user 
         argument with `profile`, by default True
         
-    Exmaples
-    --------
-    >>> import qbandas as qq
-    >>> qq.set_profile('example', host='sample', auth='12345')
-    >>> qq._get_headers('example')
-    {
-        'QB-Realm-Hostname': 'sample.quickbase.com'
-        'User-Agent': 'example'
-        'Authorization': 'QB-USER-TOKEN 12345'
-    }
-
     '''
 
     token_prefix = 'QB-TEMP-TOKEN ' if temp_token else 'QB-USER-TOKEN '
@@ -66,8 +66,7 @@ def set_profile(profile: str, *, host: str = None, user: str = None,
     generated = {k: v for k, v in generated.items() if v}
     
     profile_path = _get_profile_path(profile)
-    mode = 'w' if op.exists(profile_path) else 'x'
-    with open(profile_path, mode) as f:
+    with open(profile_path, 'w') as f:
         json.dump(current | generated, f, indent = 4)
         
 def list_profiles() -> list[str]:
@@ -89,9 +88,9 @@ def is_valid_profile(profile: str, talk: bool = False) -> bool:
     '''
     Check if a profile is usable
 
-    If a profile is valid, you will be able to make requests to the 
-    QuickBase API; however, these requests are not guaranteed to be 
-    authorized. If a profile doesn't exist, it is automaically 
+    If a profile is usable, you will be able to make requests to the 
+    QuickBase API using it; however, these requests are not guaranteed 
+    to be authorized. If a profile doesn't exist, it is automaically 
     invalid. 
 
     Parameters
@@ -106,14 +105,7 @@ def is_valid_profile(profile: str, talk: bool = False) -> bool:
     -------
     bool
         the validity of the profile
-
-    Examples
-    --------
-    >>> import qbandas as qq
-    >>> qq.create_profile()
-    >>> qq.headers.valid()
-    False
-
+        
     '''
     
     headers = _get_headers(profile)
@@ -163,6 +155,7 @@ def _get_headers(profile: str) -> dict[str, str]:
     -------
     dict[str, str] | None
         The API headers if the profile exists or None
+        
     '''
     
     profile_path = _get_profile_path(profile)
@@ -185,6 +178,7 @@ def _get_profile_path(profile: str) -> str:
     -------
     str
         The path to the profile whether it exists or not
+        
     '''
     
     return op.join(USER_PATH, 'profiles', profile + '.json')

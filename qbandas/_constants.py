@@ -11,16 +11,23 @@ import os.path as op
 
 from . import _pack
 
+# -----------------------------QB_PATH-------------------------------- #
 QB_PATH: str = op.dirname(op.realpath(__file__))
 
+# ----------------------------USER_PATH------------------------------- #
 config = configparser.ConfigParser()
 config.read(op.join(QB_PATH, 'data', 'config.ini'))
     
 USER_PATH: str = op.expanduser(op.join(config['general']['base_dir'], 
                                 config['general']['qbandas_dir']))
+
+# ------------------------MAX_BATCH_RECORDS--------------------------- #
 MAX_BATCH_RECORDS: int = int(config['records']['max_batch'])
+
+# -------------------------TIMEZONE_OFFSET---------------------------- #
 TIMEZONE_OFFSET: int = int(config['timezone']['offset'])
 
+# ---------------------------FIELD_TYPES------------------------------ #
 with open(op.join(QB_PATH, 'data', 'field_types.json')) as f:
     FIELD_TYPES = json.load(f)
     

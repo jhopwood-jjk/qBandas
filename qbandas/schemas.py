@@ -2,8 +2,26 @@
 Methods that deal with handling local copies of QuickBase tables' 
 schemas.
 
-Everytime you want to upload records to a table on QuickBase, you must
+Everytime you want to upload or fetch records on QuickBase, you must
 have a valid schema for the table. 
+
+Arguments
+---------
+Field arguments for the schema are used to tell qbandas how to parse
+the incoming/outgoing data. You can set field arguments using 
+`add_schema_args()` and `set_schema_args()`.
+
+For help creating datetime format strings, see 
+[here](https://www.programiz.com/python-programming/datetime/strftime) 
+and [here](https://docs.python.org/3/library/datetime.html#strftime-strptime-behavior).
+
+| Field Type | Supported arguments                                     |
+| ---------- | ------------------------------------------------------- |
+| duration   | unit : str, either 'seconds' or 'milliseconds'          |
+| date       | format : str, datetime format string                    |
+| datetime   | format : str, datetime format string                    |
+
+
 '''
 
 import json
@@ -21,7 +39,7 @@ except FileExistsError: pass
         
 
 def fetch_schema(dbid: str, profile: str, table_name: str = None):
-    """
+    '''
     Download a local copy of a table's structure from a QuickBase 
     application.
 
@@ -34,12 +52,7 @@ def fetch_schema(dbid: str, profile: str, table_name: str = None):
     table_name : str, optional
         The name of the table. None uses the dbid, by default None
 
-    Examples
-    --------
-    >>> import qbandas
-    >>> # qbandas.schema.pull('bb7f543') # unauthorized
-
-    """
+    '''
 
     headers = _get_headers(profile)
     if not is_valid_profile(profile, talk = True):
@@ -87,7 +100,7 @@ def list_schemas() -> list[str]:
     '''
     List the names of all the usable schemas.
 
-    The names are 'table names'
+    The names are 'table_names'
 
     Returns
     -------
@@ -102,7 +115,7 @@ def _read_schema(table_name: str) -> tuple[str, dict]:
     '''
     Read in a schema
 
-    Returns the information if the schema exist
+    Returns the information if the schema exists
     
     Parameters
     ----------

@@ -1,0 +1,6 @@
+ColText,ColMultiLineText,ColRichText,ColMultipleChoice,ColMultiSelect,ColCheckbox,ColNumeric,ColCurrency,ColPercent,ColRating,ColDate,ColDatetime,ColTimeofDay,ColDuration,ColiCalendar,ColURL,ColFile,ColAddress,ColPhone,ColEmail,ColUser,ColListUser,ColvCard
+Test text,"This text has multiple lines
+This is the second line","<p><strong><em><span style=""font-size:14px;"">This text is formatted</span></em></strong></p>
+
+<p><strong><em><span style=""font-size:14px;"">using HTML... I think</span></em></strong></p>
+",Option1,Option1;Option2,yes,1337,$12.56,0.8%,4,05-09-2023,05-09-2023 12:00 AM,11:30:00 am,5000 days,,https://www.google.com/,test_records.py,"East Campus Mall, Madison, Wisconsin 53715",(555) 123-4567 x1234,example@gmail.com,Test Rep <57240980.bh36>,example2 user <65248632.qd44>,

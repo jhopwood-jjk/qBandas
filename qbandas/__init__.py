@@ -1,6 +1,5 @@
 '''
-Integrates the popular data handling library Pandas and the QuickBase 
-API.
+.. include:: ../README.md
 '''
 
 from .profiles import (_del_profile, _get_headers, _get_profile_path,
